@@ -1,0 +1,2562 @@
+---
+title: "An Introduction to Practical 3D Math for Programmers"
+date: 2021-10-11T08:41:57-06:00
+dateHide: true
+draft: false
+markdeep: true
+#mathjax: true
+#disable markdown conversion and let markdeep handle it instead
+markup: "html"
+tagss: ['math','unity','3d']
+---
+
+## Preface
+
+There are a lot of guides for 3D math that seem to be written by people quite good at math. If instead you're like me and better at programming than math this is the guide I wish I had when I first started learning OpenGL, Direct3D, Shaders, Unity, and Unreal. I struggled a lot reading other people's guides, white papers, thesis documents, books, and videos. It felt like everyone was speaking a language I didn't know.
+
+I struggled while learning with the following:
+
+1. I couldn't read the formula
+1. Math was abstract with little explanation in english
+1. Lack of practical use cases for the math
+1. Why specific math was necessary (why do we even use matrices?)
+1. Why so many foundations are required
+1. Converting the math to code
+1. Links to Wikipedia math articles filled me with dread
+
+Below I hope to address the problems I came across so that you can learn this faster and less frustratingly than I did. 
+
+In each section I've also compiled additional resources with some information about how far they lean on the code and math fields. Along with some recommendations of what I think you might want to learn to go beyond the basics.
+
+The goal of this guide is keep it as short as possible and to give you the very basics of what you might come across in daily 3D programming work. I'm not going to go into any of the complexities beyond the bare minimum, however I will point out other topics, fields of math, and resources available to further your education if you so choose along with some recommendations of what I think you should do.
+
+### Assumptions
+
+I'm assuming you have basic understanding of algebra (not linear, just the kind you learn in grade school) and trigonometry. You probably know how to calculate the angles and lengths of a right triangle but probably need to reference the formulas before doing it by hand. You know the difference between degrees and radians. You're familiar with basic 3 dimensional positions and would know how to plot points on an axis grid. You are probably already familiar and comfortable with vectors, but probably have forgotten or never studied matrices.
+
+I'm assuming you know how to program fairly well and prefer things explained in code terms instead of math terms.
+
+In the following guide all the code is written in C# for Unity. I'm making the assumption you are capable of using Unity as a programmer who can setup Monobehaviours and run simple code and don't attempt anywhere in here to provide any resources to learn the basics of this. I will be referencing Unity's API throughtout the samples below and explain why they exist and in some cases how they work or how to write them yourself.
+
+### What You Will Learn
+
+This guide will teach you the basics of handedness, vectors, matrices, quaternions, and other math commonly used with 3D. Why they are used, why you are learning them, how they are used, how to read the math, and what practical applications you can use them for. In all cases you will see how to apply these to actual code along with some explanations for general intuition for each of the terms.
+
+### The Frustration with Symbols
+
+Mathematics reminds me very much of Perl, regular expressions, and code golf. Seemingly the formulas try to be expressed in the shortest and simplest way possible even to the point of lowering readability. 
+
+![Figure [code_golf]: [Code Golf](https://js1k.com/2017-magic/demo/2894#cmV0dXJuKE4oKSoocT1NYXRoLnBvdygxLXQqMiUxLDgpK01hdGgucG93KDEtdC84JTEsMTYpKjgpKyh0Kih0JjI0fDMyKSpbNCwzLDI1LDAsNCwxLDNdW3QqOCY3XSUxKSkvMzIKZm9yKGQ9Zj0zMDA7ZC09LjU7Yy5maWxsUmVjdCgyNTYrZCpDKEEpLDEyOCtkKlMoQSksZC85K3EqcSxkLzkpKUE9TigpKjYuMyxjLmZpbGxTdHlsZT1SKGYqUyhBK3QqMytTKEEqZi9kK3QpKSxmKlMoQSo1LXQqMyksZCk=)](https://i.imgur.com/8jVEhMS.png)
+
+Instead of using words single letters, accent markings, and symbols seem to proliferate the field. For better or worse this is what you will see when reading formulas.
+
+$$
+\begin{equation}
+\label{axb}
+Ax = b
+\end{equation}
+$$
+
+Eqn. [axb] requires a fairly solid understanding of linear algebra and it's many rules to truly read it.
+
+It's important to note that symbols and letters are not always universal across mathematical fields. A symbol or letter in one set of math may represent something completely different in another. When looking at various symbols one should take note which field they are being expressed from so you can have a better understanding of what they mean. Many letters or variables will be explained outside of the formula excluding commonly accepted ones.
+
+Some of these symbols implicitly mean something such an example might be something you're already familiar with in programming: $ \epsilon $, epsilon also often represented as a e or eps which means a small amount. We use epsilon a lot in programming to represent a value that if it's under is considerd the same or effectively 0. If you were a new programmer to the field especially dealing with new floating point concepts this variable would be quite odd and foreign to you at first, but eventually you'll come to use it w/o defining what it means or represents because it feels so universal and well understood you'd just be wasting space for something that feels obvious.
+
+<div>
+!!! note
+    Epsilon shares the same role in programming/floating point as it does in calculus a very small value.
+</div>
+
+Math symbols and formulas are a lot like this, in some cases you just have to be able to know what is implied which is unfortunate if they are not explained in the text you're trying to interpret.
+
+
+#### Very Common Greek Letters You will See in 3D Math
+
+There are many greek letters used in math, but for 3D here is a very short list of the most common ones
+
+
+Lowercase | Uppercase | Name | Common Use
+----------|-----------| ---- | ----------
+$ \alpha $ | A | Alpha | an angle or the first variable
+$ \beta $ | B | Beta | an angle or the second variable
+$ \gamma $ | $ \Gamma $ | Gamma | an angle or the third variable
+$ \theta $ | $ \Theta $ | Theta | an angle
+$ \phi $ | $ \Phi $ | Phi | an angle
+$ \delta $ | $ \Delta $ | Delta | a small change or the difference of one from another (such as a vector or scalar subtracted from another)
+$ \epsilon $ | E | Epsilon | typically for a near 0 value or when comparing two numbers they are the same if the difference is less then or equal to epsilon
+$ \sigma $ | $ \Sigma $ | Sigma | a sum of a set of values when it's uppercase
+[Table [greekletters]: Different greek letters]
+
+
+There is a great resource at: https://www.intmath.com/blog/learn-math/math-its-all-greek-to-me-1048 that goes through various greek letters in mathematics and tells you how they are pronounced, what they are commonly used for, and where you typically see them.
+
+### Math Has Rules
+
+Different types of math have specific rules where you follow them out step by step. In order to understand how to interpret and implement the formulas provided you will need to learn these rules. This is similar in programming to define a function that abstracts away the steps involved and is easier to read like english (sometimes treating the inside of the function like a black box). At first many of these results will seem like pure wizardry unless you already know the process. A transformation matrix at first seemed completely foreign and confusing because I didn't know how to calculate the result, I relied entirely on other people's understanding to use it until I got frustrated and wanted to know exactly what the values meant and how it worked.
+
+![All Magic is Science](https://66.media.tumblr.com/e87fd406ec27a8ae819b78d178e3371b/tumblr_inline_na64scWNTb1qzjzhu.gif)
+
+Taking the time to learn these rules, especially the building blocks removes this confusion and frustration.
+
+
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Handedness, Axis, and Rotations
+
+Handedness defines in which directions an axis lies along in addition to the positive and negative directions of the axis. There are two systems Right-handed (OpenGL, Maya, Max, Blender, CryEngine) and Left-handed (DirectX, Unity, Unreal). Keep in mind most systems let you configure the handedness used within them. The system is as follows, on your hand (either one) your thumb is the x axis, your index finger is the y axis, and your middle finger is the z axis. The direction they point towards is the positive side. Put your three fingers so they are all orthogonal (perpendicular) from each other (forming a 90 degree rotation/cross). If you can't orient your hand in the proper axis/positive vector it means you're using the wrong hand and need to swap your hands.
+
+What does "point along the vector mean" this means, by default, the item starts at the negative side and it's "front" or "forward" or "primary direction" is pointing down the axis towards the positive value. This is another important thing to memorize and understand, the default terminology has things facing or pointing towards the positive values of an axis, not the negative ones.
+
+[Right-hand rule on wikipedia][1]
+
+## Up Vector (+Z or +Y)
+
+It's worth noting that the axis that defines the up-vector changes between many systems. It is always either +Y or +Z though, I have yet to see any backwards system using the +X vector. Systems that use +Z up are Unreal, Max, CryEngine, Blender. There is some history for this from drafting where x-y is on a piece of paper and the z axis comes towards the viewer of the paper. This was seen in early modeling systems in 3D Studio (later called 3ds Max) which was heavily used by the Epic team working on Unreal.
+
+Up          | Left-handed | Right-handed 
+------------|-------------| ------------
+Y | ![](https://i.imgur.com/XBaVVmO.png) | ![](https://i.imgur.com/tovaRhe.png)
+Z | ![](https://i.imgur.com/nbtjtEF.png) | ![](https://i.imgur.com/6yJ3kKf.png)
+[Table [handedness]: Different coordinate systems]
+
+> If you think of the world from an overhead perspective (like Google Maps), then the location of an object on the map is defined primarily by its X and Y coordinates, and its height above the map by Z. In my intuition, this was the most sensible coordinate system for Unreal. This standard was earlier chosen by AutoCAD deriving 3D data from 2D floor plans, and continued with Autodesk's 3D Studio. 
+>
+> -- <cite>[Tim Sweeney][2]</cite>
+
+> Sorry y’all I was young and this coordinate system stuff was confusing
+>
+> ![@FreyaHolmer](https://pbs.twimg.com/media/DTbWux8WkAUOZZx?format=jpg&name=small)
+> 
+> -- <cite>[Tim Sweeney][Tim Sweeney Sorry]</cite> & <cite>[Freya][Freya Chart]</cite>
+
+See if you can recreate the axis of Unity and Unreal with your hands to prove it works. You will want to be able to do this both physically and in your head b/c you will be dealing with handedness and directions all the time moving forward. Master this basic skill now, it's referenced everywhere.
+
+Understanding this will answer the question of why is Unity's +x direction to the left instead of to the right when the +z is towards the screen.
+
+## Rotation Direction
+
+A rotation is clockwise when using left hand with thumb pointing in the +axis (typically "Z") and counter-clockwise when using right hand. It is important to know that they flip between these two systems.
+
+Orient your hand so your thumb points towards the +Z axis and curl your fingers, the direction your fingers curl is the direction of the rotation. In Unity this means if we put our left hand up and have the thumb point towards your face and curl your fingers it creates a clockwise rotation. Try it and memorize this. Remember you need to use the hand for rotation based on the handedness of your system (if you were coding directly in OpenGL you'd use your right hand instead).
+
+Let's try this in two "opposite" systems, the first being Unity (left-handed y up) and the second Blender (right-handed z up). If we rotate the "up" vector which way will it turn, try to predict before you see below the magenta rotation direction below.
+
+![Unity Up Rotation](https://i.imgur.com/TDkHYbw.png)
+![Blender Rotation](https://i.imgur.com/aZIqYjW.png)
+
+
+
+## Visual Colors for Axis
+
+A quick note, you will typically see the folowing colors to represent the axis xyz:
+
+1. X Axis - Red
+1. Y Axis - Green
+1. Z Axis - Blue
+
+This is a nice system b/c in shader code your .xyz == .rgb as well.
+
+![Unity Gizmo](https://i.imgur.com/JZG8Q4F.png) ![Blender Gizmo](https://i.imgur.com/pWrxwOo.png)
+
+
+
+## Yaw, Pitch, Roll and Euler Angles
+
+Often times you will hear rotations referred to as yaw, pitch, and roll. I won't use matrices or math to represent these rotations just yet, it's important to have an intuitive sense for each of these rotations because these terms will come up frequently in texts, descriptions, and formulas.
+
+Each rotation is typically done one at a time (against each axis) and the order matters. If you rotate about the xyz you must always rotate in that samne order (you can't now rotate in yxz order). There are several problems with euler rotations, but they are quite easy to understand before you worry about Quaternions.
+
+A rotation can be decalred in Euler Angles (typically in degrees) in a rotation about the x, a rotation about the y, and a rotation about the z. For example to rotate 30 degrees about the x and 90 degrees about the y, you can express this in Euler angles as $ (30,90,0) $.
+
+A rotation can also be expressed as a difference between the new axis that forms the final or combined rotation vs the global or parent coordinate system, which I will explain later.
+
+### Yaw
+
+This rotation is what happens when you look left or right without moving in any other direction of your head (you're scanning what's left of you to what's right of you). If +y is pointing above towards the sky, this will be a rotation about the y axis. If we're in left hand coordinate system (unity) a 90 degree rotation in yaw would mean you're now looking towards your right shoulder.
+
+### Pitch 
+
+This is the rotation if you were diving in an airplane to come in for a landing or take off from the ground. If +z is your `forward vector` and +y is your `up vector` this will be a rotaiton about the +x vector. If we're in left hand coordinate system (unity) a 90 degree rotation in pitch would mean you're now pointing straight down towards the ground in yhour plane.
+
+### Roll
+
+This is the rotation you would take if you were dodging an attack by rolling to the left or right of you (think dark souls style evasion). If +z is the direction in front of you, or your `forward vector` this is a rotation about the +z vector. If we're in left hand coordinate system (unity) a 90 degree rotation in roll would mean you're laying on the left side of your body on the ground.
+
+
+![[Dodge Rolling in Dark Souls](https://tenor.com/view/dark-souls-dark-souls2-roll-dodge-roll-pursuer-gif-16545879)](https://i.imgur.com/SfM2z21.gif class=gif)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Vectors
+
+A vector can represent many things but in 3d but it is typically either a direction or a position. When it's a direction it's very useful to have it normalized (or a unit vector). When a vector is a non-normalized direction it's magnitude is used to tell how much it moves in that direction. A vector can have any number of dimensions but the most common you will see are 2, 3, and 4.
+
+1. 2 dimensional vectors are commonly seen in UV mapping for texture coordinates.
+1. 3 dimensional vectors are commonly seen for positions, rotations, directions, normals, and forces.
+1. 4 dimensional vectors are commonly seen in homogenous coordinate systems (position vs direction), tangents, quaternions, and having their 4th term represent sides/sign/flipping/scales/angle/etc.
+
+You may hear the terms `Euclidean vector` which just means the vector is used for geometric objects (it has a length, magnitude, and a direction).
+
+You may also hear the term `Cartesian coordinate` system which is used to represent perpendicular axis commonly used in 2 and 3 dimensional space. This is the normal representation you've studied in school where you can represent a Vector like $ (x, y, z) $ with $ (0,0,0) $ representing the default center of the global coordinate system.
+
+![Figure [sample_vectors]: Sample non-unit vectors](https://i.imgur.com/nOKBulc.png)
+
+## Why Vectors
+
+How else would you represent them? They are compact and efficient, can be neatly aligned as 4 32bit floats (128 bits) which is very useful in optimization, pointers, SIMD, Single Instruction Multiple Data, and GPGPU programming, General Purpose Graphics Processing. They are easily understood and not a weird abstract thing. You could implement a nicely featured Vector API library in matter of an hour. In short they are a shallow abstraction that can be directly mapped to a struct, class, or arrays in programming.
+
+A solid understanding of vectors is essential for understanding any of the higher level mathematics beyond basic addition. You must master these, and there's a good chance you already know this quite well.
+
+
+## In code
+
+Vectors are usually represented as a `Vector3` or `float3` but can also be represented in other dimensions such as `Vector2`, `Vector4`, or `float4`. Where the first three variables are xyz and the 4th if provided is w. x y z and w are all scalars of the vector. In mathematical terms a scalar is just a magnitude and does not represent a direction. When a vector has only 2 dimensions it commonly has it's first two scalars as uv instead of xy.
+
+
+~~~C#
+var v0 = new Vector3(1,2,3);
+~~~
+[Listing [vector code]: Creating a vector at x:1, y:2, z:3]
+
+
+~~~C#
+var v0 = Vector3.Normalize(new Vector3(1,2,3));
+~~~
+[Listing [vector code]: Creating a normalized vector now x: 0.3, y: 0.5, z: 0.8]
+
+You can also visualize directional vector quite easily in Unity
+~~~C#
+UnityEngine.Debug.DrawRay(Vector3.zero,v0,Color.blue,5f);
+~~~
+
+![Figure [debugging_vector_unity]: Visualizing a Vector](https://i.imgur.com/oj7qd0m.png)
+
+When assigning this new point to a transform's position
+
+![Figure [vector_as_position]: A cube translated to the same point](https://i.imgur.com/6OKpqKg.png)
+
+
+
+## Mathematical Representation
+
+Vectors are typically represented as matrices with a single column or a single row. We'll cover matrices later, so don't worry if you've never dealt with matrices yet.
+
+They can be treated as single column with each scalar value as a separate row 
+
+\begin{equation}
+\vec{v} =
+\begin{bmatrix}
+x\\\\
+y\\\\
+z\\\\
+w
+\end{bmatrix}
+\end{equation}
+
+or as a single row with each scalar value as a separate column
+
+\begin{equation}
+\vec{v} =
+\begin{bmatrix}
+ x & y & z & w
+\end{bmatrix}
+\end{equation}
+
+A 3 dimensional vector at x:1, y:2, z:3
+
+\begin{equation}
+\vec{v} =
+\begin{bmatrix}
+1\\\\
+2\\\\
+3\\\\
+\end{bmatrix}
+\end{equation}
+
+
+A vector often has a directional arrow such as, $ \vec{v} $, over it's variable when represented in mathematical notation though it isn't a requirement and you will often see it simply as $ v $. If a vector has a hat symbol such as $ \hat{v} $ this typically means the vector is a unit vector, or normalized. Common vector variables are $ x, y, z, i, j, k $. Vectors are almost always represented as lower case and sometimes as a free vector (a vector that has a direction and magnitude, basically the opposite of a point in space); representing a translation from $ \vec{a} $ to $ \vec{b} $ as $ \overrightarrow{AB} $. Don't get too caught up on this as it's not always represented this way.
+
+
+!!! note
+    Vectors represented as columns vs rows changes based on what type of math is being applied. They will frequntly have their shape converted (called transposing).
+
+
+## Basic Vector Math
+
+You can add and subtract vectors as expected. When multiplying you can either scale it by a scalar, another vector, or calculate it's dot product.
+
+
+### Vector Addition in Math
+
+Vectors can easily be added or subtracted together such as 
+
+\begin{equation}
+\vec{v0} = (a,b,c)\\\\
+\vec{v1} = (d,e,f)\\\\
+\overrightarrow{v2} = \vec{v0} + \vec{v1} = (a+d,b+e,c+f)\\\\
+\end{equation}
+
+\begin{equation}
+\vec{a} = (1,2,3)\\\\
+\vec{b} = (4,5,6)\\\\
+\overrightarrow{c} = (5,7,9)
+\end{equation}
+
+Now that we know how to add a vector using math, let's apply it in code
+
+### Vector Addition in Unity
+
+~~~C#
+var v0 = new Vector3(1,0,0);
+var v1 = new Vector3(0,2,0);
+var v2 = new Vector3(0,0,3);
+
+var vP = v0 + v1 + v2;
+
+//ToString("F6") means print with 6 decimal places after 0
+UnityEngine.Debug.Log("vP: " + vP.ToString("F6")); 
+//vP: 1,2,3
+~~~
+
+If we want to do the math by hand ourselves...
+
+### Vector Addition in Code Manually
+
+~~~c#
+var a = new Vector3(1,2,3);
+var b = new Vector3(4,5,6);
+var ab = new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+UnityEngine.Debug.Log("ab: " + ab);
+//ab: 5,6,9
+~~~
+
+### Vector Subtraction in Math
+
+\begin{equation}
+\vec{v0} = (a,b,c)\\\\
+\vec{v1} = (d,e,f)\\\\
+\vec{v2} = \vec{v0} - \vec{v1} = (a-d,b-e,c-f)\\\\
+\end{equation}
+
+\begin{equation}
+\vec{a} = (1,2,3)\\\\
+\vec{b} = (4,5,6)\\\\
+\overrightarrow{c} = (-3,-3,-3)
+\end{equation}
+
+
+### Vector Subtraction in Unity
+
+~~~C#
+var v0 = new Vector3(5,2,0);
+var v1 = new Vector3(3,1,2);
+var vP = v0 - v1;
+UnityEngine.Debug.Log("vP: " + vP);
+//vP: 2,1,-2
+~~~
+
+### Vector Subtraction in Code Manually
+
+~~~C#
+var a = new Vector3(1,2,3);
+var b = new Vector3(4,5,6);
+var c = new Vector3(a.x-b.x, a.y-b.y, a.z-b.z);
+UnityEngine.Debug.Log("c: " + c);
+//c: -3,-3,-3
+~~~
+
+### Practical Use of Adding Vectors
+
+Adding vectors are useful for all sorts of things such as finding the new absolute or relative position between discrete distances traveled with respect to directions (also called Manhatten or Taxicab distance or in math terms $ l_1 $) or force equations in physics (such as adding two thrust vectors on a spacecraft).
+
+### Practical Use of Subtracting Vectors
+
+Subtracting vectors is frequently done to find the direction and distance between two points. If for example you wanted to know how to transform an object from point $ a $ to $ b $ you can simply do $ \delta = b - a $. The symbol $ \delta $ is the greek letter `delta` and is frequnetly used to represent a change from one to another (it is commonly used in calculus to denote a "small change"). The distance is the magnitude of the resulting direction vector.
+
+Another common case is finding if a point lies inside or outside of a circle (collision detection).
+
+!!! note
+    It's important to remember when subtracting that you will be pointing from the first vector towards the second vector. $ b - a $ will give you a new vector $ c $ that points from $ a $ to $ b $.
+
+## Multiplying Two Vectors (Dot Product)
+
+When we have 2 vectors if we multiply them together we get a dot product which is a scalar (a singular real number value). If the value is positive it means the vectors are pointing within 180 degrees of each other (there is an imaginary plane that the two vectors on on the same side of), when it's 0 it means they are perpendicular from each other, when it's negative it means the vectors are pointing opposite of the imaginary plane. These values are also useful when both vectors are normalized. When a dot product is performed against two normalized vectors you can use the value from -1->0->1 as the ratio of the angle between them; where a dot product of 0 means the vectors are perpendicular or 90 degrees apart from each other, a value of 1 means they are 0 degrees (they point in the same direction), -1 means they point in the exact opposite direction (180 degrees), and a value of 0.7071 means they are 45 degrees apart. You might be wondering where 0.7071 came from instead of guessing 0.5? The cosine of 45 degrees is 0.7071, one way of calculating a dot product is taking the cosine of the angle between the vectors and multliplying it by the magnitudes of each vector.
+
+
+### Calculating the Dot Product in Math
+
+The mathematical way of calculating a dot product is
+
+\begin{equation}
+\label{dotproductalt}
+a \cdot b = ||a|| \times ||b|| \times \cos(\theta)
+\end{equation}
+
+Or we can use the following
+
+\begin{equation}
+\label{dotproduct}
+a \cdot b = a_x \times b_x + a_y \times b_y + a_z \times b_z
+\end{equation}
+
+
+### Calculating the Dot Product in Unity
+~~~c#
+var a = new Vector3(1,0,0);
+var b = new Vector3(0,1,0);
+//point in both x and y at a 45 degree line
+var c = (new Vector3(1,1,0)).normalized; 
+
+var dot = Vector3.Dot(a,b);
+UnityEngine.Debug.Log("dot: " + dot);
+//dot: 0
+
+var dot = Vector3.Dot(a,c);
+UnityEngine.Debug.Log("dot: " + dot);
+//dot: 0.7071
+~~~
+
+### Calculating the Dot Product Manually
+~~~C#
+var a = new Vector3(1,0,0);
+var b = new Vector3(0,1,0);
+var dot = a.x * b.x + a.y * b.y + a.z * b.z;
+UnityEngine.Debug.Log(dot);
+//0
+~~~
+
+### What Does $|x|$ or $||x||$ Represent?
+
+$ |x| $ and $ ||x|| $ mean the same thing in vector terminology they both represent the length, magnitude, or norm of a vector which can be calculated by the following formula. The single pipe $ |x| $ is really used in singular dimensions to represent the absolute value, which if you look at the formula below you can see why it's effectively the same thing.
+
+\begin{equation}
+|x| = \sqrt{x^2}
+\end{equation}
+
+When we have a non-scalar or vector with more then one dimension we would calculate the magnitude or length, also called $ l^2 $ norm as such (in this 3 dimensional vector)
+
+\begin{equation}
+||a|| = \sqrt{a_x^2 + a_y^2 + a_z^2}
+\end{equation}
+
+For example...
+
+\begin{equation}
+||\begin{bmatrix}0,1,2\end{bmatrix}|| = \sqrt{0^2 + 1^2 + 2^2} = \sqrt{5} = 2.2361
+\end{equation}
+
+You can use either pipe symbols you want but $ ||x|| $ is prefered.
+
+Let's do the math for (1,0,0) and (0.7071,0.7071,0) ourselves to make sure both formulas and Unity will calcualte the same results
+
+\begin{equation}
+\vec{a} = \begin{bmatrix} 1,0,0 \end{bmatrix}\\\\
+\vec{b} = \begin{bmatrix} 0.7071,0.7071,0 \end{bmatrix}\\\\
+||a|| = 1\\\\
+||b|| = 1\\\\
+\theta = 45\\\\
+c = \vec{a} \times \vec{b}\\\\
+\end{equation}
+
+With an angle
+
+\begin{equation}
+c = ||a|| \times ||b|| \times cos(\theta)\\\\
+c = 1 \times 1 \times 0.7071\\\\
+c = 0.7071\\\\
+\end{equation}
+
+Without the angle
+
+\begin{equation}
+c = a_x \times b_x + a_y \times b_y + a_z \times b_z\\\\
+c = 1 \times 0.7071 + 0 \times 0.7071 + 0 \times 0\\\\
+c = 0.7071
+\end{equation}
+
+
+### Practical Thinking of a Dot Product
+
+We can see that the dot product calculates a useful number but what does it really mean, what does it represent? Let's start by looking at a two vectors pointing in the same directions $ (1,0,0) $ they are both pointing in +x. 
+
+From our eqn. [dotproduct] we can see that $ x $ is multiplied against the other $ x $ and same for the $ y $ and $ z $. If we had like values in only one of the dimensions such as $ x $ the other two values will become small or 0 so the only larger value that will arise is from the $ x $.
+
+If we then look at values that are not large such as $ y $ a small value times another small value is an even smaller value which means it has low or no contribution.
+
+What this summation gives us is a number that tells us how similar our vectors are in direction.
+
+Let's now look at an orthogonal or perpendicular set of vectors $ (1,0,0) $ and $ (0,1,0) $. When we multiply all values against the eqn. [dotproduct] we effectively 0 out each term and they add to 0, meaning we have no similarity.
+
+The pattern we're finding is, small terms will cancel out the other vectors terms, and only like or similar terms (excluding 0) will have influence on the final value. This is effectively a ratio, which is why in eqn. [dotproductalt] we take the magnitudes of both vectors and multiply them together and then multiply them again by the cosine of the angle between them. Which is in itself a ratio of one vector against another. 
+
+\begin{equation}
+cos(\theta) = \frac{adjacent}{hypotenuse}
+\end{equation}
+
+
+### Practical Uses of a Dot Product
+
+Here are a few practical applications of the use of a dot product...
+
+#### Lighting 
+
+A dot product is used all over the place in in shaders when doing lighting calculations as a strength calculation between a surface normal and the light direction (see also: `BDRF`). Picture a directional light pointing towards a polygon, that polygon (or fragment of the polygon) has a normal vector. If we calculate the dot product between the light's direction and the surface normal we will have a nice way to know if we are backlighting the polygon, glancing it, or directly bouncing off it. When we normalize this for a typical directional light we now have a strength from 0->1. You will often see a common variable `NdotL` in shader code which is the vertex or fragment normal dot the light vector.
+
+!!! note
+    The Blinn-Phong reflection model uses NdotL
+
+
+## Cross Product
+
+A cross product gives you a new vector which is perpendicular from the other two vectors. This can be thought of as your first two vectors forms a plane or parallelogram along their two axis and the cross product gives you the surface normal of this plane. The magnitude of this vector is dependent on the angle between your two starting vectors, the magnitude will be at the peek when these two vectors form a 90 degree or 270 degree angle from each other. When the angle between the two is 0 degree or 180 degree the magnitude of the new vector will also be 0. This magnitude is also another important property which is that it is equal to the area of the parallelogram.
+
+!!! note
+    Keep in mind the cross product is based on handedness so it's sign will be dependent on which direction your two vectors point in.
+
+
+### Cross Product in Math
+
+\begin{equation}
+\label{crossproductalt}
+\vec{a} \times \vec{b} = ||a|| \times ||b|| \times sin(\theta) \times \hat{n}
+\end{equation}
+
+1. Where $ \theta $ is the angle between a and b
+1. Where $ \hat{n} $ is the unit vector from a and b that is perpendicular
+
+So that's not super helpful, because we probably don't know $ \hat{n} $ offhand and we'd have to calculate $ \theta $ as well.
+
+There is another formula, if the origin of our two vectors start at the origin $ (0,0,0) $. That's easier for us to work with.
+
+\begin{equation}
+\label{crossproduct}
+\vec{c}_x = \vec{a}_y \vec{b}_z - \vec{a}_z \vec{b}_y\\\\
+\vec{c}_y = \vec{a}_z \vec{b}_x - \vec{a}_x \vec{b}_z\\\\
+\vec{c}_z = \vec{a}_x \vec{b}_y - \vec{a}_y \vec{b}_x
+\end{equation}
+
+### Calculating the Cross Product in Unity
+
+~~~C#
+var a = new Vector3(1,0,0);
+var b = new Vector3(0,1,0);
+var c = Vector3.Cross(a,b);
+UnityEngine.Debug.Log(c)
+//(0.0, 0.0, 1.0)
+~~~
+
+### Calculating the Cross Product Manually
+~~~C#
+var a = new Vector3(1,0,0);
+var b = new Vector3(0,1,0);
+var c = new Vector3
+(
+    a.y*b.z - a.z*b.y,
+    a.z*b.x - a.x*b.z,
+    a.x*b.y - a.y*b.x
+);
+UnityEngine.Debug.Log(c);
+//(0.0, 0.0, 1.0)
+~~~
+
+
+### Practical Thinking of a Cross Product
+
+Did you notice in the eqn. [crossproduct] that no like term was multiplied against itself ( $ a.x $ was never multiplied against $ b.x $ ). Effectively the cross product is calculated by taking evey value that is *not* similar from itself. It's similar to a `symmetric difference` from set theory, or in other words it's maximizing and calculating a new vector that is as far opposite from the other two vectors. 
+
+When we look at eqn. [crossproductalt] we can see a similar equation from eqn. [dotproductalt] which is that the magnitue of a times the magnitude of b times a trigonometric function of cos or sin respectively. The only difference is we've swapped from cos to sin and now we're multiplying it by another vector $ \hat{n} $. This produces a scalar value in both cases it's the magnitude of the result. A vector times a scalar is a vector. This is why our cross product is also a vector (a magnitude * a direction) and not just a scalar.
+
+!!! note
+    The cross product is always perpendicular to the two vectors it's calculated from (provided the angle is != 0)
+    
+
+### Practical Uses of a Cross Product
+
+It is quite common to calculate a surface normal from a triangle which can be done very easily using a cross product of the two sides of a triangle. This might be used for rendering, physics, computing a plane's normal for tighter packing, etc.
+
+### Further Reading
+
+1. https://betterexplained.com/articles/cross-product/ (100% math, 0% code)
+1. https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model (50% math, 50% code)
+1. https://www.mathsisfun.com/algebra/vectors-cross-product.html (100% math)
+
+
+
+## Homogenous Coordinates or Why 4 Dimensional Vectors are Used
+
+You will often see Vector4 to represent 3 dimensional positions or directions with the w of the .xyzw being a 1 or 0. It will be a 1 if it's a position and it will be a 0 if it's a direction. This system is called `Homogeneous coordinates` and is covered in many resources such as: http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
+
+There are reasons why w will swap between 0 or 1, which we'll cover later, for now just know if you are using `Vector4` in Unity or a `float4` in shaders to set w = 1 for positions, and 0 for directions. The short answer for why w is 0 or 1 is due to the math behind multiplying a vector against a transformation matrix with a 1 keeping the values and a 0 forcing them to 0.
+
+\begin{equation}\tag*{direction pointing in +x}
+\begin{bmatrix}
+1\\\\
+0\\\\
+0\\\\
+0
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation}\tag*{point at position x:1, y:2, z:0}
+\begin{bmatrix}
+1\\\\
+2\\\\
+0\\\\
+1
+\end{bmatrix}
+\end{equation}
+
+In general, inside Unity, positions or directions are represented as simple `Vector3` structs and the functions called determine if they should perform position or direction calculations such as `TransformPoint` vs `TransformDirection`.
+
+## Unit Vectors and Normalization
+
+When vectors are directions they are very useful to be normalized, you can normalize a vector quite easily. A normalized vector is a unit vector.
+
+Unit vectors are defined as a vector with a magnitude of 1.0.
+
+\begin{equation}
+\hat{v} = ||\vec{v}|| = 1.0
+\end{equation}
+
+### Determining if a Vector is Unit Length in Code
+
+~~~ C# 
+var vectors = new List<Vector3>();
+vectors.Add(new Vector3(1,0,0));
+vectors.Add(new Vector3(0,1,0));
+vectors.Add(new Vector3(1,1,1));
+vectors.Add(new Vector3(2,0,0));
+vectors.Add(new Vector3(0.7071f,0.7071f,0));
+vectors.Add(new Vector3(Mathf.Cos(Mathf.Deg2Rad*45f),Mathf.Cos(Mathf.Deg2Rad*45f),0));
+vectors.Add(new Vector3(0.3333f,0.3333f,0.3333f));
+vectors.Add(new Vector3(0.5f,0.5f,0.0f));
+
+for(int i=0; i < vectors.Count; i++)
+{
+    var v = vectors[i];
+    //Can also be done as: Mathf.Approximately(v.magnitude,1.0f); but it has a different epsilon
+    var delta = Mathf.Abs(v.magnitude - 1.0f);
+    var epsilon = 0.0001f; //how much precision do we want
+    var isUnit = delta < epsilon;
+    UnityEngine.Debug.Log("Vector: " + v.ToString("F6") + " => " + isUnit);
+}
+//Vector: (1.000000, 0.000000, 0.000000) => True
+//Vector: (0.000000, 1.000000, 0.000000) => True
+//Vector: (1.000000, 1.000000, 1.000000) => False
+//Vector: (2.000000, 0.000000, 0.000000) => False
+//Vector: (0.707100, 0.707100, 0.000000) => True
+//Vector: (0.707107, 0.707107, 0.000000) => True
+//Vector: (0.333300, 0.333300, 0.333300) => False
+//Vector: (0.500000, 0.500000, 0.000000) => False
+~~~
+
+They are extremely common in 3D programming such as in normals and directions. The reason we use unit vectors is that they do not cause scaling changes when doing vector and matrix math. It's the same principle as any value multiplied by 1 does not change. For example let's say we have a ball travelling with a speed of 5 $ m/s^2 $ and we have two direction vectors the first normalized as $ (1,0,0) $ and the second as a non-normalized value of $ (2,0,0) $, both traveling in the +x direction. When we want to calculate where the ball is at 1 second, we can simply do a vector scalar multiplication to find the position
+
+\begin{equation}
+position = \hat{dir} * speed * time
+\end{equation}
+
+In the first scenario we will be at position $ (5,0,0) $ in the second scenario we would be at $ (10,0,0) $ which is incorrect b/c we didn't normalize the direction. A direction can instead pack the speed as velocity in the vector which would be $ (5,0,0) $ which would give us a new formula
+
+\begin{equation}
+position = \vec{velocity} * time
+\end{equation}
+
+### Unit Circle and Unit Sphere
+
+![Figure [unit_vectors]: Unit Vectors](https://i.imgur.com/zkOxmJA.png)
+
+Unit vectors all point around the unit circle or unit sphere for 2 and 3 dimensions respectively. The unit circle and unit sphere both have a radius of 1.0.
+
+For 2 dimensional vectors you can calculate x and y as
+
+\begin{equation}
+x = cos(\alpha)\\\\
+y = sin(\alpha)
+\end{equation}
+
+For 3 dimensional vectors you can calculate 
+
+\begin{equation}
+\alpha = latitude\\\\
+\beta = longitude\\\\
+x = cos(\alpha) \times sin(\beta) \\\\
+y = cos(\alpha) \times cos(\beta)\\\\
+z = sin(\alpha)\\\\
+\end{equation}
+
+You can visualize `latitude` as the angle that you'd have to see something up in the sky from respect to the ground (how much you have to look up) and `longitude` as the angle that you'd have to turn your head to the left or right.
+
+### Calculating Values on a Unit Circle
+
+~~~C#
+var alpha = 45f;
+var x = Mathf.Cos(Mathf.Deg2Rad * alpha);
+var y = Mathf.Sin(Mathf.Deg2Rad * alpha);
+UnityEngine.Debug.Log("X: " + x.ToString("F6") + " y: " + y.ToString("F6"));
+//prints X: 0.707107 y: 0.707107
+~~~
+
+### Calculating Values on a Unit Sphere
+
+~~~C#
+var alpha = 45f; //latitude
+var beta = 45f; //longitude
+var x = Mathf.Cos(alpha) * Mathf.Sin(beta);
+var y = Mathf.Cos(alpha) * Mathf.Cos(beta);
+var z = Mathf.Sin(alpha);
+
+var unitVector = new Vector3(x,y,z);
+UnityEngine.Debug.Log(unitVector.ToString("F6"));
+//(0.446998, 0.275963, 0.850904)
+UnityEngine.Debug.Log(unitVector.magnitude);
+//0.9999999 
+UnityEngine.Debug.DrawRay(Vector3.zero,unitVector,Color.blue,5f);
+~~~
+
+![Figure [unit_sphere]: Unit Sphere](https://i.imgur.com/dwDZ7jx.png)
+
+We can see in the render above that our vector points halfway towards x and z and halfway from the horizon to y.
+
+!!! note
+    The sphere above is scaled to $ (2.0,2.0,2.0) $ b/c the default unity radius of a sphere is 0.5, not 1.0
+
+
+### Calculating the Normal Vector
+~~~C#
+var v = new Vector3(10, 10, 10); //x:10, y:10, z:10
+var normal = Vector3.Normalize(v) //or normal = v.normalized;
+UnityEngine.Debug.Log("v: " + v.ToString("F6"));
+//prints v: (0.577350, 0.577350, 0.577350)
+~~~
+
+It's important to note that the formula for normalizing a vector does not equate to the following
+
+\begin{equation}
+(x + y + z) \ne 1
+\end{equation}
+
+That is not how you normalize it. Though many normalized vectors such as (1,0,0) that would be the case. The formula for normalizing a vector is:
+
+\begin{equation}
+\vec{n} = ( \vec{x / ||v||,y/||v||,z/||v||} ) 
+\end{equation}
+
+Where $||v||$ is the magnitude of the vector. In terms of code you could write your own implementation in Unity like so (there are built in functions to do this for you though)
+
+~~~C#
+var v = new Vector3(10,20,30);
+var magnitude = (v.x*v.x + v.y*v.y + v.z*v.z); //or v.magnitude
+var normalized = v / magnitude; //or simply v.normalized
+UnityEngine.Debug.Log("n: " + normalized.ToString("F6"));
+//prints n: (0.267261, 0.534523, 0.801784)
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Matrices
+
+Matrices are used in nearly all transformations in 3D space. They are used in every major game engine and rendering system. They are also used in extensively in Linear Algebra and Machine Learning. Understanding matrices even if you forget all the rules is extremely valuable to avoid confusion when looking at code in 3D systems.
+
+## What is a Matrix
+
+A matrix is simply a set of nodes or cells inside a rectangular pattern or a table. These cells contain scalar values. They are analagous to multi dimensional arrays in c. They contain both rows and columns even if they only have one of each.
+
+Linear Algebra provides many rules for how to perform various calculations against matrices.
+
+!!! note
+    There are different types of matrices and their use varies, but the math performed is the same
+
+$$
+\begin{equation}
+\label{examplematrix}
+\begin{bmatrix}
+a & b\\
+c & d
+\end{bmatrix}
+\end{equation}
+\\\\
+\text{Sample Matrix}
+$$
+[eqn: [examplematrix]: Sample Matrix]
+
+## Why Matrices
+
+Matrices, like vectors, provide an efficient way to align and pack data used for transformations. For example a 4 row by 4 column matrix can be packed into 16 units (typically a 32bit floating point value) and accessed linearly or in a multi-dimensional way. The accessor method can be changed for optimization much like nested loops can be re-arranged for optimizations in extremely large matrices.
+
+In Linear Algebra there are rules that allow for efficient transformation calculations to be done that can often times be combined into one matrix such as a the Translation Rotation Scale, TRS, or the Model View Projection, MVP, matrix. Because there are so many transformations, and these transformation steps can be combined together, that take a 3D point into a 2D point (your screen) matrices are a natural fit that come straight from the math world.
+
+If you have a point in 3D space and you want to perform the typical Translation Rotation and Scale operations, you have a few options. You can use 3 matrices independantly to perform the Translation Rotation and Scale separelely, one TRS matrix and multiply your position as a vector against it, or you could perform discrete operations yourself. If you are only doing one of the operations it might make sense to ignore the matrix altogether as it would just add unnecessary complexity. I will demnonstrate in this section how you could perform both a TRS matrix calculation (manually) and also the discrete calculation (manually). The beauty of the matrix is it's basically a language that let's you efficiently write (in math) many operations in a simple way (by following the rules of matrices).
+
+
+## Practical Applications
+
+Before we go into the mechanics of a matrix, I wanted to take a little bit of time and list out some things that matrices are useful for and give another strong urge for you to properly learn how matrices work so you will have an easier time with other systems that might be introduced in more advanced math.
+
+1. Translate a vector
+1. Rotate a vector
+1. Scale or skew a vector
+1. Calculating a vertex through a bone hierachy (Skinned meshes)
+1. Solving system of linear equations
+1. Circuitry
+1. Finding the number of edges that connect discrete points
+1. Finding triangles and other loops for a set of connections
+1. Image processing such as blurring, sharpening, and edge detection
+1. Mesh subdivision and smoothing
+1. Machine Learning
+
+
+## Why Matrices Seem Complicated
+
+The short answer is there are rules for matrices that if you haven't studied linear algebra you probably don't know yet. It makes them seem oddly complicated at first. There are many rules in linear algebra, but for most 3D work you will only need to learn just a handful. I'll teach you the very minimum set of rules so that you'll understand the basics of what the matrices are doing, how they work, and how to code with them.
+
+If you'd like to learn more about matrices and linear algebra there is a section of [further reading](#matrices/furtherreading) at the bottom of the matrix section with some free resources.
+
+## What You Will Learn About Matrices
+
+I **will** teach you the following topics about matrices:
+
+1. Translation
+1. Rotation
+1. Scale
+1. Combining Matrices
+1. Skinning and Bind Poses 
+
+What I **will not** teach you:
+
+1. Rank
+1. Dimensionality
+1. Pivot Variables
+1. Free Variables
+1. Vector Spaces and Subspaces
+1. Solving Linear Equations
+1. Elimation
+1. Reduced Row Echelon Form
+1. Basis Vectors
+1. Eigen Vectors and Eigen Values
+1. Singular Value Decomposition
+1. Fast Fourier Transform
+1. ... and much much more
+
+If any of those topics sound interesting to you, well you're in luck because all of these topics are covered in [further reading](#matrices/furtherreading).
+
+
+## How is a Matrix Declared
+
+In a 2 dimensional matrix, the row is *always* defined first typically as $ i $ or $ m $ and the column is *always* defined next typically as $ j $ or $ n $. When declaring the number of rows or columns it's tpically written as $ m $ x $ n $ or $ (m,n) $ so a 2 x 3 matrix would could be written as $ A(2,3) $. This is called the *shape* of a matrix.
+
+Matrices most commonly have parentheses or square brackets and rarely with no decorator. Some decorators such as the pipe symbol have special meanings such as calculating the determinant.
+
+\begin{equation}
+\begin{bmatrix}
+ a & b \\\\
+ c & d
+\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+\begin{pmatrix}
+ a & b \\\\
+ c & d
+\end{pmatrix}
+\end{equation}
+
+\begin{equation}
+\begin{matrix}
+ a & b \\\\
+ c & d
+\end{matrix}
+\end{equation}
+
+
+Which decorator you want to use is up to you as long as you stick with the parenthesis or square brackets; if you want to go with the definitive source on Linear Algebra, Gilbert Strang, use square brackets.
+
+## How is a Matrix Indexed or Accessed 
+
+It is quite common to pluck out a few values out of a matrix when doing 3D programming. When referring to a specific node or element inside the matrix you will typically see the variable as lowercase with a subscript like $ a_{ij} $ such as $ a_{23} $ for row 2 column 3 of matrix $ A $. The indexes will either start at 0 or 1 and it depends on the system you are using. In most math systems it will start at 1, though in many computational systems they start at 0 (like an array would in most languages). As far as how matrices are packed into a block of linear memory, it changes from system to system and is defined as row-major or column-major. 
+
+!!! note
+    Almost every matrix variable in math texts will be uppercase.
+
+Row-major means accessing the next element in the 2D array will pull the next column (unless it wraps to the next row). Column-major means accessing the next element in the 2D array will pull the next row (unless it wraps to the next column). See further: https://en.wikipedia.org/wiki/Row-_and_column-major_order
+
+!!! note
+    The matrix accessor order is not typically important unless you are accessing the direct low level array
+
+### Accessing Matrix Cells in Math
+
+In most math texts you will see cells indexed as below where cell $ \color{blue}{a_{23}} $ represents the 2nd row and 3rd column
+
+\begin{equation}
+\begin{bmatrix}
+ a_{11} & a_{12} & a_{13} \\\\
+ a_{21} & a_{22} & \color{blue}{a_{23}} \\\\
+ a_{31} & a_{32} & a_{33}
+\end{bmatrix}
+\end{equation}
+
+## Common Parameters
+
+1. Shape (how many rows vs columns)
+1. Indexes starting at 0 or 1
+1. Row-major or Column-major
+
+
+## Matrix Defined in Unity
+
+Unity defines the row first when indexing meaning the row is first and the column is second, in addition the index starts at 0 not 1. Unity is also column-major meaning the entire column is aligned in memory then the next column; that is $ m_{00} $ => $ m_{10} $ => $ m_{20} $ => $ m_{30} $ => $ m_{01} $ are aligned in memory. Most matrices in unity are 4x4 as with many other rendering systems.
+
+\begin{equation}
+\begin{bmatrix}
+m_{00} & m_{01} & m_{02} & m_{03} \\\\
+m_{10} & m_{11} & m_{12} & m_{13} \\\\
+m_{20} & m_{21} & m_{22} & m_{23} \\\\
+m_{30} & m_{31} & m_{32} & m_{33}
+\end{bmatrix}
+\end{equation}
+
+The complete API for Unity's Matrix class can be found at: https://docs.unity3d.com/ScriptReference/Matrix4x4.html. You can see that they only provide a 4x4 matrix.
+
+### Accessing Cells of a Matrix in Unity
+
+Here is an example of accessing <span style="color:blue">3 cells</span> in 4x4 matrix in unity that looks like this (an identity matrix). 
+
+\begin{equation}
+\begin{bmatrix}
+\color{blue}{1} & \color{blue}{0} & 0 & 0 \\\\
+0 & \color{blue}{1} & 0 & 0 \\\\
+0 & 0 & 1 & 0 \\\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+
+
+~~~C#
+var m = Matrix4x4.identity;
+var m00 = m.m00;
+var m01 = m.m01;
+var m11 = m.m11;
+UnityEngine.Debug.Log("m00: " + m00 + " m01: " + m01 + " m11: " + m11);
+//m00: 1 m01: 0 m11: 1
+~~~
+
+### Multidimensional vs Flattened Access in Unity
+
+In this case, since we are accessing the 2D array, we now need to know if we are column or row major (Unity is column-major).
+
+~~~C#
+//access m12 first then m11 second
+var m = Matrix4x4.identity;
+int row = 1;
+int col = 2;
+//multidimensional access
+var row1col2 = m[row,col];
+col = 1;
+//flattened access
+var row1col1Alt = m[row +  (col * 4)];
+UnityEngine.Debug.Log("first: " + row1col2 + " second: " + row1col1Alt);
+//first: 0 second: 1
+~~~
+
+## The Basic Rules of Matrices
+
+Ok enough delaying, here are the minimum set of rules you'll need to know to work with matrices.
+
+### Treating Vectors as Matrices
+
+Moving forward we are going to treat vectors as a matrix now. So when we multiply a vector against a matrix what we're really doing is multiplying a matrix against another matrix. By doing this we will follow the rules of a matrix operations as defined below. When doing this we will assume a Vector is a matrix with 1 or more rows (typically 3 or 4 though) and only 1 column, that is it will be a vertically oriented matrix. For example a point $ (1,2,4) $ will now look like:
+
+$$
+\begin{equation}
+\begin{bmatrix}
+1\\
+2\\
+4
+\end{bmatrix}
+\end{equation}
+$$
+
+So why are we using a vertical matrix for a vector instead of a horizontal one which we would be inclined to use at first glance. The reason for this is b/c of the rules of a matrix multiplication, both for the output and that the number rows of matrix B (our new point/direction vector) must match the number of rows of matrix A.
+
+### Non-Commutative Multiplication
+
+Matrices are not commutative for multiplication, math terminology meaning multiplication order cannot change. This is why in code when you see matrices being multiplied the order is very important (same thing with quaternions).
+
+<div>
+$$
+\begin{align*}
+2 * 3 & = 6 \\
+3 * 2 & = 6 \\
+1 + 2 & = 3 \\
+2 + 1 & = 3 \\
+1 + -2 & = -1 \\
+-2 + 1 & = -1 \\
+\end{align*}
+\\\\
+\text{Examples of Cummutative Operations}
+$$
+</div>
+
+
+Without knowing these rules it's difficult to get the right answers out.
+
+<div>
+$$
+\begin{equation}
+AB = C \\\\
+\text {is not the same as} \\\\
+BA = C
+\end{equation}
+$$
+</div>
+
+#### Non-Commutative in Unity
+
+Let's try this in code with a two matrices.
+
+~~~C#
+var a = Matrix4x4.zero;
+var b = Matrix4x4.zero;
+
+//fill a from 0->15
+//fill b from 15->31
+for(int i=0; i < 16; i++)
+{
+    a[i] = i;
+    b[i] = 16+i;
+}
+
+var ab = a*b;
+var ba = b*a;
+UnityEngine.Debug.Log(ab);
+//440.00000	536.00000	632.00000	728.00000
+//510.00000	622.00000	734.00000	846.00000
+//580.00000	708.00000	836.00000	964.00000
+//650.00000	794.00000	938.00000	1082.00000
+UnityEngine.Debug.Log(ba);
+//152.00000	504.00000	856.00000	1208.00000
+//158.00000	526.00000	894.00000	1262.00000
+//164.00000	548.00000	932.00000	1316.00000
+//170.00000	570.00000	970.00000	1370.00000
+~~~
+
+As we can see when changing the order it simply doesn't yield the same matrix as an output. 
+
+!!! note
+    The output of a matrix when debugging in unity is m00 m01 m02 m03 then next line is m10 m11 m12 m13 and so forth
+
+
+### Multiplying Matrices (Dot Product)
+
+Matrices also don't multiply in a simple way, they multiply in a system called the dot product that has a specific set of rules that isn't something intuitive right away. The rule is as follows for each cell of the output matrix $ C $ you calculate it as a sum of the row of the first matrix (matching the row our your $ C $ matrix) $ A $ multiplied against each scalar in the the column of the second matrix (matching the column of your $ C $ matrix) $ B $. Do note that this is when you multiply one matrix against another, not a simple matrix times a scalar.
+
+<div>
+$$
+\begin{equation}
+AB = C
+\end{equation}
+$$
+</div>
+
+Where $ A $ and $ B $ are your known matrices and $ C $ is your output matrix. You would then carry through the operation foreach $ C_ij $ below is an example of this formula being carried out.
+
+<div>
+$$
+\begin{align*}
+A & = \begin{bmatrix}
+1 & 2 \\
+3 & 4 \\
+\end{bmatrix}
+\\\\
+B & = \begin{bmatrix}
+a & b \\
+c & d \\
+\end{bmatrix}
+\\\\
+AB & = \begin{bmatrix}
+1*a + 2*c & 1*b + 2d \\
+3a + 4c & 3b + 4d
+\end{bmatrix}
+\\\\
+\;
+\\\\
+& a = 5, b = 6, c=7, d=8
+\\\\
+AB & = \begin{bmatrix}
+5+14 & 6+16\\
+15+28 & 32
+\end{bmatrix}
+\\\\
+AB & = \begin{bmatrix}
+19 & 22\\
+43 & 50
+\end{bmatrix}
+\end{align*}
+$$
+</div>
+
+Let's look at an example of a 4x4 translation matrix $ A $ multiplied against a position 4 dimensional homegenous vector $ B $. Translation matrices are covered below so don't get caught up in the actual matrix yet. We'll set our vector as a position vector at point $ (1,1,1) $ and move it to $ (1,2,3) $. Our intuition should tell us our resulting vector should be at $ (1+1,1+2,1+3) => (2,3,4) $. Since this is a homegenous point we'll set our vector's $ w $ to 1 as per our homegenous coordinate rules. After we're done we can clip or truncate this w off the vector, effectively ignoring it in the result set.
+
+<div>
+$$
+\begin{align*}
+A & = \begin{bmatrix}
+1 & 0 & 0 & 1\\
+0 & 1 & 0 & 2\\
+0 & 0 & 1 & 3\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+B & = \begin{bmatrix}
+1\\
+2\\
+3\\
+1
+\end{bmatrix}\\
+\\
+AB & = C\\
+\\
+C & = \begin{bmatrix}
+1*1 + 0*1 + 0*1 + 1*1\\
+0*1 + 1*1 + 0*1 + 2*1\\
+0*1 + 0*1 + 1*1 + 3*1\\
+0*1 + 0*1 + 0*1 + 1*1
+\end{bmatrix}\\
+\\
+C & = \begin{bmatrix}
+2\\
+3\\
+4\\
+1
+\end{bmatrix}
+\end{align*}
+$$
+</div>
+
+
+#### Shape Constraints and Output
+
+1. The number of columns of A must match the number of rows of B.
+1. The output of a matrix multiplication will have the same number rows of the first matrix and the same number of columns as the second one.
+
+<div>
+$$
+\begin{equation}
+A(m,n) \times B(n,o) = C(m,o)
+\end{equation}
+$$
+</div>
+
+<div>
+$$
+\begin{align*}
+\begin{bmatrix}
+m_{00} & m_{01} \\
+m_{10} & m_{11}
+\end{bmatrix}
+\times
+\begin{bmatrix}
+m_{00} \\
+m_{10}
+\end{bmatrix}
+& =
+\begin{bmatrix}
+m_{00} \\
+m_{10}
+\end{bmatrix}
+\\\\
+\begin{bmatrix}
+m_{00} & m_{01} & m_{02}
+\end{bmatrix}
+\times
+\begin{bmatrix}
+m_{00} \\
+m_{10} \\
+m_{20}
+\end{bmatrix}
+& =
+\begin{bmatrix}
+m_{00}
+\end{bmatrix}
+\\\\
+\begin{bmatrix}
+m_{00} & m_{01} & m_{02}\\
+m_{10} & m_{11} & m_{12}
+\end{bmatrix}
+\times
+\begin{bmatrix}
+m_{00} \\
+m_{10} \\
+m_{20}
+\end{bmatrix}
+& =
+\begin{bmatrix}
+m_{00} \\
+m_{10}
+\end{bmatrix}
+\\\\
+\begin{bmatrix}
+m_{00} & m_{01} & m_{02}\\
+m_{10} & m_{11} & m_{12}\\
+m_{20} & m_{21} & m_{22}\\
+m_{30} & m_{31} & m_{32}\\
+m_{40} & m_{41} & m_{42}\\
+\end{bmatrix}
+\times
+\begin{bmatrix}
+m_{00} \\
+m_{10} \\
+m_{20}
+\end{bmatrix}
+& =
+\begin{bmatrix}
+m_{00} \\
+m_{10} \\
+m_{20} \\
+m_{30} \\
+m_{40}
+\end{bmatrix}
+\\\\
+\begin{bmatrix}
+m_{00} & m_{01} & m_{02}\\
+m_{10} & m_{11} & m_{12}
+\end{bmatrix}
+\times
+\begin{bmatrix}
+m_{00} & m_{01} \\
+m_{10} & m_{11} \\
+m_{20} & m_{21}
+\end{bmatrix}
+& =
+\begin{bmatrix}
+m_{00} & m_{01} \\
+m_{10} & m_{11} 
+\end{bmatrix}
+\end{align*}
+$$
+</div>
+
+
+
+#### Multiplying Matrices in Unity
+
+~~~C#
+//unity does not provide a basic Matrix2x2, we'd have to make our own
+var a = Matrix4x4.zero;
+var b = Matrix4x4.zero;
+
+a.m00 = 1;
+a.m01 = 2;
+a.m10 = 3;
+
+b.m00 = 1;
+b.m01 = 2;
+b.m10 = 3;
+
+var c = a * b;
+
+UnityEngine.Debug.Log(c);
+//7.00000	2.00000	0.00000	0.00000
+//3.00000	6.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+~~~
+
+#### Multiplying Matrices in Unity by Hand
+
+~~~C#
+var a = Matrix4x4.zero;
+var b = Matrix4x4.zero;
+var c = Matrix4x4.zero;
+
+a.m00 = 1;
+a.m01 = 2;
+a.m10 = 3;
+
+b.m00 = 1;
+b.m01 = 2;
+b.m10 = 3;
+
+var d = Matrix4x4.zero;
+d.m00 = a.m00*b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30;
+d.m01 = a.m00*b.m01 + a.m01 * b.m11 + a.m02 * b.m21 + a.m03 * b.m31;
+d.m10 = a.m10*b.m00 + a.m11 * b.m10 + a.m12 * b.m20 + a.m13 * b.m30;
+d.m11 = a.m10*b.m01 + a.m10 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31;
+//... repeat for all other cells ...
+
+UnityEngine.Debug.Log(d);
+//7.00000	2.00000	0.00000	0.00000
+//3.00000	6.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+~~~
+
+So let's create a new un-optimized way to calculate for any shape
+
+~~~C#
+var a = Matrix4x4.zero;
+var b = Matrix4x4.zero;
+var c = Matrix4x4.zero;
+
+a.m00 = 1;
+a.m01 = 2;
+a.m10 = 3;
+
+b.m00 = 1;
+b.m01 = 2;
+b.m10 = 3;
+
+//normally we'd get this value from a property on the matrices themselves
+//but unity doesn't provide shape data
+var rowsOfA = 4; 
+var colsOfB = 4;
+var colsOfA = 4;
+
+for(int i=0; i < rowsOfA; i++)
+{
+    for(int j=0; j < colsOfB; j++)
+    {
+        for(int k=0; k < colsOfA; k++){
+            c[i,j] += a[i,k] * b[k,j];
+        }
+    }
+}
+
+UnityEngine.Debug.Log(c);
+//7.00000	2.00000	0.00000	0.00000
+//3.00000	6.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+~~~
+
+## Inverse
+
+The inverse of a matrix effectively "undoes" what the original matrix did. If you translated the point by 5 units in the +x, the inverse will translate it 5 units in the -x. How you calculate the inverse is a bit complicated and it can't be done for all matrices. If you want to know how to inverse a matrix by hand I'll refer you to another resource for the [Matrix Inverse Rules](https://www.mathsisfun.com/algebra/matrix-inverse.html). If you study linear algebra you will also learn this method. There are many practical reasons beyond undoing the work but it's way beyond the scope of this guide.
+
+When you see a matrix inversed in linear algebra it will have a super script of -1 like $ A^{-1} $. One interesting property of inverses is a matrix times it's inverse is equal to the identity matrix (covered below).
+
+$$
+\begin{equation}
+A \times A^{-1} = I
+\end{equation}
+$$
+
+### Matrix Inverses in Unity
+
+Let's start with a position at $ (0,0,0) $ and we'll translate it 5 units in the +x and then "undo" that translation using an inverse matrix.
+
+~~~C#
+var position = Vector3.zero;
+var offset = new Vector3(5,0,0);
+var m0 = Matrix4x4.Translate(offset);
+var m1 = m0.inverse;
+var newPosition = m0.MultiplyPoint(position);
+var returnedPosition = m1.MultiplyPoint(newPosition);
+
+UnityEngine.Debug.Log(position);
+//(0.0, 0.0, 0.0)
+UnityEngine.Debug.Log(newPosition);
+//(5.0, 0.0, 0.0)
+UnityEngine.Debug.Log(returnedPosition);
+//(0.0, 0.0, 0.0)
+~~~
+
+`Matrix4x4.Translate` creates a Translation matrix (explained later). `MultiplyPoint` is similar to converting the vector to a homogenous 4 dimensional point with w = 1 doing the multiply then getting the result and dropping the w. Note the actual operations are different in unity's code but that's mostly due to optimizations. There is a faster conversion `MultiplyPoint3x4` as well which is faster as it doesn't need to account for perspective, you should use the 3x4 version if you are just moving a point around. For direction vectors you can use `MultiplyVector`.
+
+
+## Common Matrices in 3D
+
+In 3D programming you will often come across several commonly used matrices.
+
+1. Identity Matrix
+1. Zero Matrix
+1. Translation Matrix
+1. Rotation Matrix
+1. Scale Matrix
+1. TRS Matrix (Translation, Rotation, Scale combined)
+1. Model Matrix
+1. View Matrix
+1. Projection Matrix
+1. MVP Matrix (Model, View, Projection combined)
+1. Object to World Matrix
+1. World to Object Matrix
+1. Bind Poses
+
+There are many more matrices in linear algebgra, but I've chosen the ones you will frequently see and ignored others (like elimination matrices).
+
+### Identity Matrix
+
+The identity matrix that is square (same number of rows as columns $ A(m,n), m=n $ and has 1 in each cell in a diagonal line starting at the first cell towards the bottom right where all other cells are 0. In linear algebra it is represented as $ I $.
+
+<div>
+$$
+\begin{equation}
+I = \begin{bmatrix}
+\color{red}{1} & 0 & 0 & 0\\
+0 & \color{red}{1} & 0 & 0\\
+0 & 0 & \color{red}{1} & 0\\
+0 & 0 & 0 & \color{red}{1}
+\end{bmatrix}
+\end{equation}
+$$
+</div>
+
+Let's try a simple example from a 4x4 identity matrix and a 2x4 matrix.
+
+<div>
+$$
+\begin{align*}
+A & = \begin{bmatrix}
+1 & 2 \\
+0 & 3 \\
+0 & 7 \\
+0 & 0 
+\end{bmatrix}\\
+\\
+AI & = C\\
+\\
+C & = \begin{bmatrix}
+1*1 + 0*0 + 0*0 + 0*0 & 1*2 + 0*3 + 0*7 + 0*0\\
+0*1 + 1*0 + 0*0 + 0*0 & 0*2 + 1*3 + 0*7 + 0*0\\
+0*1 + 0*0 + 1*0 + 0*0 & 0*2 + 0*3 + 1*7 + 0*0\\
+0*1 + 0*0 + 0*0 + 1*0 & 0*2 + 0*3 + 0*7 + 1*0
+\end{bmatrix}\\
+\\
+C & = \begin{bmatrix}
+1 & 2\\
+0 & 3\\
+0 & 7\\
+0 & 0
+\end{bmatrix}
+\end{align*}
+$$
+</div>
+
+At first glance it seems useless, and anything multiplied against the identity matrix will not change. However this is like your $ 1 $ in multiplication, it is a basis for effectively not changing something. There are many interesting properties in linear algebra that results in or from an identity matrix, but that's beyond the scope of this guide.
+
+However it is am important matrix in 3D not only because of it's "one" like property, but because you typically use it when manually constructing your own matrix as the starting point instead of zero. For example if you are translating a value start with the identity, not the zero matrix.
+
+#### Identity Matrix in Unity
+
+~~~C#
+var m0 = Matrix4x4.identity;
+UnityEngine.Debug.Log(m0);
+//1.00000	0.00000	0.00000	0.00000
+//0.00000	1.00000	0.00000	0.00000
+//0.00000	0.00000	1.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+
+var m1 = Matrix4x4.zero;
+m1.m00 = 42;
+m1.m10 = 32;
+
+var m2 = m0 * m1;
+var m3 = m1 * m0;
+
+UnityEngine.Debug.Log(m2);
+//42.00000	0.00000	0.00000	0.00000
+//43.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+UnityEngine.Debug.Log(m3);
+//42.00000	0.00000	0.00000	0.00000
+//43.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+
+var v0 = new Vector4(1,2,3,1);
+var v1 = m0 * v0;
+UnityEngine.Debug.Log(v0);
+//(1.0, 2.0, 3.0, 1.0)
+~~~
+
+
+### Zero Matrix
+
+The zero matrix is, as you can probably guess, just a matrix filled with a zero in each cell. It is important to note that is not a "do-nothing" matrix, far from it, for a "do-nothing" matrix you want the Identity matrix. Typically you only use a zero matrix in 3D when you are planning to fully construct your own matrix by hand. If you multiply any matrix or vector by a zero matrix you will end up with the result as a new matrix filled with zeros.
+
+$$
+\begin{equation}
+Z = \begin{bmatrix}
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0
+\end{bmatrix}
+\end{equation}
+$$
+
+#### Zero Matrix in Unity
+
+One thing to note is that by filling our matrix with 0's we will end up dividing by zero when doing persepctive handling for some methods, this means we can't use functions like `MultipltyPoint` or our result will be filled with `NaN`.
+
+~~~C#
+var m0 = Matrix4x4.zero;
+var position = new Vector3(1,2,3);
+var newPosition = m0.MultiplyPoint3x4(position);
+UnityEngine.Debug.Log(m0);
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	0.00000
+UnityEngine.Debug.Log(newPosition);
+//(0.0, 0.0, 0.0)
+~~~
+
+### Translation Matrix
+
+This is a relatively simple matrix with an interesting property. You will find it has an identity matrix down but on the last column $ (m_{03},m_{13},m_{23}) $ the x, y, and z offsets will be stored untouched. For a translation that does nothing this will be $ (0,0,0) $.
+
+$$
+\begin{equation}
+T = \begin{bmatrix}
+1 & 0 & 0 & \color{red}{x}\\
+0 & 1 & 0 & \color{green}{y}\\
+0 & 0 & 1 & \color{blue}{z}\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+Here is an example of a translation matrix that can move a vector by x: 2, y: -1, and z: 5
+
+$$
+\begin{equation}
+T = \begin{bmatrix}
+1 & 0 & 0 & \color{red}{2}\\
+0 & 1 & 0 & \color{green}{-1}\\
+0 & 0 & 1 & \color{blue}{5}\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+Let's take this same matrix $ T $ and multiply it by a point $ \vec{v} = (1,2,3) $ and verify it does what we expect. Remember we will have to expand our vector to a 1x4 matrix $ v $ (we must match the rows of our vector matrix with the number of columns of our translation matrix) and since we're going to "treat" it as a point not a direction we'll set $ w = 1 $.
+
+$$
+\begin{align*}
+v & = \begin{bmatrix}
+1\\
+2\\
+3\\
+1
+\end{bmatrix}\\
+\\
+Tv & = C\\
+\\
+C & = \begin{bmatrix}
+1*1 + 0*1 + 0*1 + 2*1\\
+0*1 + 1*2 + 0*1 + -1*1\\
+0*1 + 0*1 + 1*3 + 5*1\\
+0*1 + 0*1 + 0*1 + 1*1\\
+\end{bmatrix}\\
+\\
+C & = \begin{bmatrix}
+3\\
+1\\
+8\\
+1
+\end{bmatrix}
+\end{align*}
+$$
+
+Now you might be thinking wow that's a lot of operations for which we can simply just add two vectors together and you'd be absolutely right, we have many 32 lookups, 16 multiplies, 12 add operations, and 4 assigns vs a typical vector addition which would just result in 3 adds/assigns. What's important to note here is that the translation matrix is not typically used by itself, you would normally combine this in to the TRS matrix instead. Some libraries for matrices may even provide a translation method which will just do the last column add instead.
+
+#### Translation Matrix in Unity
+
+Let's translate the same matrix $ T $ and vector $ \vec{v} $ as before, but using unity to do the work for us.
+
+~~~C#
+var position = new Vector3(1,2,3);
+var offset = new Vector3(2,-1,5);
+
+var m0 = Matrix4x4.Translate(offset);
+UnityEngine.Debug.Log(m0);
+//1.00000	0.00000	0.00000	2.00000
+//0.00000	1.00000	0.00000	-1.00000
+//0.00000	0.00000	1.00000	5.00000
+//0.00000	0.00000	0.00000	1.00000
+
+var newPosition = m0.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(3.0, 1.0, 8.0)
+~~~
+
+#### Translation Matrix in Unity Manual Assignment
+
+What if we want to manually insert the cells ourselves?
+
+~~~C#
+var position = new Vector3(1,2,3);
+var offset = new Vector3(2,-1,5);
+
+//start with the identity not zero!
+var m0 = Matrix4x4.identity;
+
+m0.m03 = offset.x;
+m0.m13 = offset.y;
+m0.m23 = offset.z;
+//m0.m33 is already 1 b/c of the identity matrix
+UnityEngine.Debug.Log(m0);
+//1.00000	0.00000	0.00000	2.00000
+//0.00000	1.00000	0.00000	-1.00000
+//0.00000	0.00000	1.00000	5.00000
+//0.00000	0.00000	0.00000	1.00000
+
+var newPosition =  m0.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(3.0, 1.0, 8.0)
+~~~
+
+
+### Rotation Matrix
+
+This is the first matrix that will make you scratch your head. The first 3x3 cells of our 4x4 matrix will be used for the rotation. This is going to be made by combining a rotation on each axis as a matrix, then multiplying these three matrices together to get a final matrix $ R $ which is a matrix which can rotate about any axis. Now we'll need to be very careful about this combining step for two reasons.
+
+1. Matrices are non-commutative (order of multiply matters)
+1. Euler rotations the order of rotation about the axis matters
+1. Unity has a specific rotation order: ZXY
+
+For simple vectors see [Unit Circle](#vectors/unitvectorsandnormalization/unitcircleandunitsphere). For a derivation of where a 2 dimensional rotation matrix comes from I found [Rotation Derivation](http://www.sunshine2k.de/articles/RotationDerivation.pdf) which explains it quite nicely. Just a quick bit of info that rotation matrix derivation is for right-hand systems, to convert to unity's system, left-hand, you can transpose it. The formulas below can be found anywhere online, but the derivation of it provides some insight into why it looks that way.
+
+!!! note
+    You can convert the rotation matrix from right -> left or left -> right by transposing the mastrix
+
+#### Rotation About an Axis
+
+
+
+I'll start with the three basic or elemental rotations, for these we'll be rotating $ \theta $ against each axis one at a time.
+
+##### Pitch Rotation (X axis)
+
+Let's start with the rotation about the X axis by $ \theta $ degrees. This is called a `pitch rotation`.
+
+$$
+\begin{equation}
+\begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 & \cos(\theta) & -\sin(\theta) & 0\\
+0 & \sin(\theta) & \cos(\theta) & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+It's important to notice the first column in our matrix, do you notice how it's simply 
+
+$$
+\begin{equation}
+\begin{bmatrix}
+1\\
+0\\
+0\\
+0
+\end{bmatrix}
+\end{equation}
+$$
+
+What about the first row
+
+$$
+\begin{equation}
+\begin{bmatrix}
+1 & 0 & 0 & 0
+\end{bmatrix}
+\end{equation}
+$$
+
+That's the same column and row from the identity matrix!
+
+##### Yaw Rotation (Y axis)
+
+Now let's look at rotation about the Y axis. This is called a `yaw rotation`. What do you think the 2nd column and row of this matrix might look like?
+
+$$
+\begin{equation}
+\begin{bmatrix}
+\cos(\theta) & 0 & \sin(\theta) & 0\\
+0 & 1 & 0 & 0\\
+-\sin(\theta) & 0 & \cos(\theta) & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+##### Roll Rotation (Z axis)
+
+Finally let's look at a rotation about the Z axis. This is called a `roll rotation`. I bet you can guess what the 3rd column and row will look like.
+
+$$
+\begin{equation}
+\begin{bmatrix}
+\cos(\theta) & -\sin(\theta) & 0 & 0\\
+\sin(\theta) & \cos(\theta) & 0 & 0\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+#### Rotation Order
+
+So if we had a point $ (1,0,1) $ and we want to rotate it about the origin with an euler rotation such as $ (30,90,45) $ where we are rotating 30 degrees about the x, 90 degrees about the y, and 45 degrees, we need to create 3 rotation matrices and then multiply them in order, to keep in sync with unity, we'll rotate Z first, then X, then Y. We also need to convert our degrees into radians, let's do that now: $ (0.5236, 1.5708, 0.7853) $. In the matrices below, I will precompute the trig functions such as cos(45 degrees) -> 0.7071.
+
+$$
+\begin{align*}
+
+
+Rz & = \begin{bmatrix}
+0.7071 & -0.7071 & 0 & 0\\
+0.7071 & 0.7071 & 0 & 0\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+Rx & = \begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 && 0.8660 & -0.50 & 0\\
+0 & 0.5 & 0.8660 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+Ry & = \begin{bmatrix}
+0 & 0 & 1 & 0\\
+0 & 1 & 0 & 0\\
+-1 & 0 & 0 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+v & = \begin{bmatrix}
+1\\
+0\\
+1\\
+1
+\end{bmatrix}\\
+\\
+v_{final} & = (Ry(Rx(Rz*v)))\\
+\\
+v_{final} & = \begin{bmatrix}
+1.2\\
+0.1\\
+-0.7\\
+1.0
+\end{bmatrix}
+
+
+\end{align*}
+$$
+
+You're probably wondering why the $ v_{final} $ is written in seemingly "reverse" order, it's b/c we have the vector on the right of the matrix (and we can't flip it as in $ Rz*v \ne v*Rz $), so we want to multiply like russian nesting dolls from the innermost to the outermost, that's why I wrapped parenthesis around it so you would see the order. We'll see this also appear in our code example later.
+
+![Figure [Matryoshka]: ["Russian Souvenir Shop in St. Petersburgh, Russia"](https://www.flickr.com/photos/72693550@N00/29942188772) by <a href="https://www.flickr.com/photos/72693550@N00">Magic Ketchup</a></span> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=html" style="margin-right: 5px;">CC BY-NC-SA 2.0</a><a href="https://creativecommons.org/licenses/by-nc-sa/2.0/?ref=ccsearch&atype=html" target="_blank" rel="noopener noreferrer" style="display: inline-block;white-space: none;margin-top: 2px;margin-left: 3px;height: 22px !important;"><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-by_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-nc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="https://search.creativecommons.org/static/img/cc-sa_icon.svg" /></a>](https://farm6.staticflickr.com/5613/29942188772_afe49cd8bd_b.jpg)
+
+Seems pretty exhaustive to do all that, but we can do one better, we can combine these matrices, $ Rz $ $ Rx $ and $ Ry $ together and then multiply $ v $ against the result. We're going to call this resulting matrix $ R_{yxz} $ because that's the order we have to multiply them in to get the proper result.
+
+$$
+\begin{align*}
+R_{yxz} & = Ry * Rx * Rz\\
+\\
+v_{final} & = R_{yxz} * v
+\end{align*}
+$$
+
+Ok so that's slightly better, but if you can extrapolate from the combined rotation matrix, you might be able to guess there is actually a combined matrix that we can use and plug in our 3 angles instead of calculating each rotation matrix by each axis.
+
+#### Rotation about Any Orientation
+
+So if we take our three axis rotation and multiply them together (and our order still matters) we will end up with a new matrix that we can use to rotate any point about 3 angles.
+
+Again the formula for this matrix depends on the order of the rotation XYZ vs ZYX vs ZXY etc. Unity uses ZXY so that's the matrix we'll compute here. If you'd like to see other options please see this great guide on [Euler Angles](https://www.geometrictools.com/Documentation/EulerAngles.pdf). Note that in the linked document you will need to invert the rotation matrix you're looking for, so if you're looking for ZXY you need to use the YXZ instead. I'm not going to work out the math steps because there are a lot of them, so the final matrix is as follows.
+
+
+
+$$
+\begin{equation}
+\begin{bmatrix}
+\cos(y)\cos(z) + \sin(x)\sin(y)\sin(z) & \cos(z)\sin(x)\sin(y) - \cos(y)\sin(z) & \cos(x)\sin(y) & 0 \\
+\cos(x)\sin(z) & \cos(x)\cos(z) & -\sin(x) & 0\\
+-\cos(z)\sin(y) + \cos(y)\sin(x)\sin(z) & \cos(y)\cos(z)\sin(x) + \sin(y)\sin(z) & \cos(x)\cos(y) & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+\text{Z then X then Y Rotation}
+\end{equation}
+$$
+
+Where $ x $ is the angle to rotate about the x axis, and so forth with $ y $ and $ z $.
+
+So yeah, that's an ugly formula...
+
+Let's compare this with the same rotation but in the wrong order, notice how it's completely different?
+
+$$
+\begin{equation}
+\begin{bmatrix}
+\cos(y)\cos(z) - \sin(x)\sin(y)\sin(z)  &  -\cos(x)\sin(z)  &  \cos(z)\sin(y) + \cos(y)\sin(x)\sin(z) & 0\\
+\cos(z)\sin(x)\sin(y) + \cos(y)\sin(z)  &  \cos(x)\cos(z)   & -\cos(y)\cos(z)\sin(x) + \sin(y)\sin(z) & 0\\
+-\cos(x)\sin(y)  &  \sin(x)  &  \cos(x)\sin(y) & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix}\\
+\\
+\text{Y then X then Z Rotation}
+\end{equation}
+$$
+
+Here is a [3D Rotation Calculator](https://www.andre-gaschler.com/rotationconverter/) that can compute these final matrices for you.
+
+#### Rotation Axis
+
+Before we take a look at the code, what happens if we draw a rotation matrix by plucking out the first 3 columns.
+
+We'll look at 3 examples: $ (0,0,0) $, $ (0,90,0) $, and $ (30,90,45) $.
+
+I'm going to use a 3x3 matrix here as we don't need the last column or last row of a 4x4. When drawing I will pluck column 0 as red, column 1 as green, and column 2 as blue. 
+
+$$
+\begin{equation}
+R_{0,0,0} = \begin{bmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+
+$$
+\begin{equation}
+R_{0,90,0} = \begin{bmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+-1 & 0 & 0
+\end{bmatrix}
+\end{equation}
+$$
+
+$$
+\begin{equation}
+R_{30,90,45} = \begin{bmatrix}
+0.353 & 0.353 & 0.866\\
+0.612 & 0.612 & -0.5\\
+-0.707 & 0.707 & -0
+\end{bmatrix}
+\end{equation}
+$$
+
+You might notice the first rotation that does nothing, it's the identity matrix.
+
+Let's plot them, in the plots below I will draw each line by taking a vector like $ v = (m_{00},m_{10},m_{20}) $ and rendering it's ray. You might also notice that all of these vectors appear to be unit vectors.
+
+
+0,0,0          | 0,90,0| 30,90,45
+------------|-------------| ------------
+![](https://i.imgur.com/NgpHyGf.png) | ![](https://i.imgur.com/oz86EIc.png) | ![](https://i.imgur.com/TB2SY36.png)
+[Table [rotation_matrix_axis]: Visualizing rotation axis]
+
+They look just like orthogonal axis that you might use to represent the orientation of an object, it has a forward vector (blue) an up vector (green) and the cross product of both (red).
+
+What if we now add three cubes in the scene and set their rotations to the same?
+
+0,0,0          | 0,90,0| 30,90,45
+------------|-------------| ------------
+![](https://i.imgur.com/NgpHyGf.png) | ![](https://i.imgur.com/oz86EIc.png) | ![](https://i.imgur.com/TB2SY36.png)
+![](https://i.imgur.com/CCrF7K4.png) | ![](https://i.imgur.com/jAhnlwG.png) | ![](https://i.imgur.com/NyHZw0B.png)
+[Table [rotation_matrix_axis_combined]: Syncing rotation matrices with objects]
+
+They line up exactly, so now we know what those three columns in the rotation matrix represent!
+
+So let's redo our matrix but write some new variables in there to represent what these cells mean now.
+
+\begin{equation}
+R =
+\begin{bmatrix}
+\color{red}{xAxisX} & \color{green}{yAxisX} & \color{blue}{zAxisX} & 0\\\\
+\color{red}{xAxisY} & \color{green}{yAxisY} & \color{blue}{zAxisY} & 0\\\\
+\color{red}{xAxisZ} & \color{green}{yAxisZ} & \color{blue}{zAxisZ} & 0\\\\
+0 & 0 & 0 & 1
+\end{bmatrix} \\\\
+\label{testa}
+\end{equation}
+
+This should help demystify what those cells represent in a rotation matrix.
+
+
+
+#### Rotation Matrices in Unity
+
+Thankfully Unity provides an easy way to create a rotation matrix, we'll revisit the same matrices above in different ways and compare the resulting matrices and outputs.
+
+Let's first start by creating 3 independent rotation matrices and multiplying our point by each one.
+
+~~~C#
+var position = new Vector3(1,0,1);
+Vector3 newPosition = Vector3.zero;
+
+var mX = Matrix4x4.Rotate(Quaternion.Euler(30,0,0));
+var mY = Matrix4x4.Rotate(Quaternion.Euler(0,90,0));
+var mZ = Matrix4x4.Rotate(Quaternion.Euler(0,0,45));
+
+UnityEngine.Debug.Log(mX);
+//1.00000	0.00000	0.00000	0.00000
+//0.00000	0.86603	-0.50000	0.00000
+//0.00000	0.50000	0.86603	0.00000
+//0.00000	0.00000	0.00000	1.00000
+UnityEngine.Debug.Log(mY);
+//0.00000	0.00000	1.00000	0.00000
+//0.00000	1.00000	0.00000	0.00000
+//-1.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+UnityEngine.Debug.Log(mZ);
+//0.70711	-0.70711	0.00000	0.00000
+//0.70711	0.70711	0.00000	0.00000
+//0.00000	0.00000	1.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+
+newPosition = mZ.MultiplyPoint(position);
+newPosition = mX.MultiplyPoint(newPosition);
+newPosition = mY.MultiplyPoint(newPosition);
+
+UnityEngine.Debug.Log(newPosition);        
+//(1.2, 0.1, -0.7)
+~~~
+
+Now let's combine these 3 rotation matrices into a single matrix.
+
+~~~C#
+//You might be wondering why this is in "reverse" order
+// this is b/c when we multiply matrices in code
+// we need to write them right to left so that
+// when they get applied they apply in the correct order
+var mZYX = mY * mX * mZ;
+UnityEngine.Debug.Log(mZYX);
+//0.35355	0.35355	0.86603	0.00000
+//0.61237	0.61237	-0.50000	0.00000
+//-0.70711	0.70711	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = mZYX.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(1.2, 0.1, -0.7)
+~~~
+
+Now let's create this matrix ourselves by hand.
+
+~~~C#
+var m = Matrix4x4.identity;
+var x = Mathf.Deg2Rad * 30f;
+var y = Mathf.Deg2Rad * 90f;
+var z = Mathf.Deg2Rad * 45f;
+
+//True YXZ
+//first row
+m[0,0] = Mathf.Cos(y)*Mathf.Cos(z) + Mathf.Sin(x)*Mathf.Sin(y)*Mathf.Sin(z);
+m[0,1] = Mathf.Cos(z)*Mathf.Sin(x)*Mathf.Sin(y)-Mathf.Cos(y)*Mathf.Sin(z);
+m[0,2] = Mathf.Cos(x)*Mathf.Sin(y);
+
+//second row
+m[1,0] = Mathf.Cos(x)*Mathf.Sin(z);
+m[1,1] = Mathf.Cos(x)*Mathf.Cos(z);
+m[1,2] = -1f*Mathf.Sin(x);
+
+//third row
+m[2,0] = -1f * Mathf.Cos(z)*Mathf.Sin(y)+Mathf.Cos(y)*Mathf.Sin(x)*Mathf.Sin(z);
+m[2,1] = Mathf.Cos(y)*Mathf.Cos(z)*Mathf.Sin(x) +Mathf.Sin(y)*Mathf.Sin(z);
+m[2,2] = Mathf.Cos(x)*Mathf.Cos(y);
+
+UnityEngine.Debug.Log(m);
+//0.35355	0.35355	0.86603	0.00000
+//0.61237	0.61237	-0.50000	0.00000
+//-0.70711	0.70711	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+
+newPosition = m.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(1.2, 0.1, -0.7)
+~~~
+
+Now let's have unity do the combinig for us in a single step.
+
+~~~C#
+var mComposite = Matrix4x4.Rotate(Quaternion.Euler(30,90,45));
+UnityEngine.Debug.Log(mComposite);
+//0.35355	0.35355	0.86603	0.00000
+//0.61237	0.61237	-0.50000	0.00000
+//-0.70711	0.70711	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = mComposite.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(1.2, 0.1, -0.7)
+~~~
+
+As you can see we've built a rotation matrix in many different ways and they all result in the exact same matrix with the same resulting point. This is because we're following unity's ZXY rotation order. Let's do a quick sanity check and create 2 game objects with one linked to the first as it's parent. Then we'll offset the child by $ (1,0,1) $ and then rotate the parent by $ (30,90,45) $ and verify it's world position.
+
+~~~C#
+var parentGO = new GameObject();
+var childGO = new GameObject();
+
+//offset the child
+childGO.transform.position = new Vector3(1,0,1);
+//link to our parent
+childGO.transform.SetParent(parentGO.transform);
+//rotate our parent
+parentGO.transform.rotation = Quaternion.Euler(30,90,45);
+//check our child's position
+var newPosition = childGO.transform.position;
+UnityEngine.Debug.Log(newPosition);
+//(1.2, 0.1, -0.7)
+~~~
+
+One interesting thing about the `Transform` class in Unity is it provides two matrices for you `localToWorldMatrix` and `worldToLocalMatrix`. Let's take a look at the `localToWorldMatrix` of the two transforms above and see what we find.
+
+~~~C#
+UnityEngine.Debug.Log(parentGO.transform.localToWorldMatrix);
+//0.35355	0.35355	0.86603	0.00000
+//0.61237	0.61237	-0.50000	0.00000
+//-0.70711	0.70711	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+UnityEngine.Debug.Log(childGO.transform.localToWorldMatrix);
+//0.35355	0.35355	0.86603	1.21958
+//0.61237	0.61237	-0.50000	0.11237
+//-0.70711	0.70711	0.00000	-0.70711
+//0.00000	0.00000	0.00000	1.00000
+~~~
+
+You can now notice the original rotation matrix we produced above shows up in both matrices. The only difference is in the child's matrix the last column has new values, those values coincide with it's world position $ (1.2, 0.1, -0.7) $ and are just like the translation matrix. What `localToWorldMatrix` provides is a matrix that transforms any point local to the current transform (think of it as the transform is now the origin point and the local point is the offset from that new origin) to the global/world space, this is quite useful.
+
+Let's now take a look at the other function `worldToLocalMatrix` and see what it's output is.
+
+~~~C#
+UnityEngine.Debug.Log(parentGO.transform.worldToLocalMatrix);
+//0.35355	0.61237	-0.70711	0.00000
+//0.35355	0.61237	0.70711	0.00000
+//0.86603	-0.50000	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+UnityEngine.Debug.Log(childGO.transform.worldToLocalMatrix);
+//0.35355	0.61237	-0.70711	-1.00000
+//0.35355	0.61237	0.70711	0.00000
+//0.86603	-0.50000	0.00000	-1.00000
+//0.00000	0.00000	0.00000	1.00000
+~~~
+
+Do those matrices look familiar but ever so different, they do because they are the `inverse` of the `localToWorldMatrix`. Recall that the inverse "undoes" what the original matrix does, in other words it returns us from the current space to the original space. So what does `worldToLocalMatrix` do, well it's doing the reverse or in other words it's giving you a matrix that takes anything from world space and converts it so the origin is transform you're multipying it against. Keep in mind moving points around so they are relative to other spaces is done constantly in 3D, you will want to deeply understand this concept.
+
+### Scaling Matrices
+
+The good news is scaling matrices are quite simple to create unlike rotation matrices. All you need to do is take the first 3 diagonal cells and multiply the identity matrix with the scaling factor.
+
+It's as simple as multiplying scale x -> $ m_{00} $, scale y -> $ m_{11} $, and scale z -> $ m_{22} $.
+
+$$
+\begin{equation}
+\begin{bmatrix}
+\color{red}{x} & 0 & 0 & 0\\
+0 & \color{green}{y} & 0 & 0\\
+0 & 0 & \color{blue}{z} & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+So to scale something by x: 2, y: 1, and z: 3 we can create the matrix as such.
+
+$$
+\begin{equation}
+S = \begin{bmatrix}
+\color{red}{2} & 0 & 0 & 0\\
+0 & \color{green}{1} & 0 & 0\\
+0 & 0 & \color{blue}{3} & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+Let's test this against a vector position $ (1,2,3) $.
+
+$$
+\begin{align*}
+v & = \begin{bmatrix}
+1\\
+2\\
+3\\
+1
+\end{bmatrix}\\
+Sv & = \begin{bmatrix}
+2*1 + 0*2 + 0*3 + 0*1\\
+0*1 + 1*2 + 0*3 + 0*1\\
+0*1 + 0*2 + 3*3 + 0*1\\
+0*1 + 0*2 + 0*3 + 1*1
+\end{bmatrix} = \begin{bmatrix}
+2\\
+2\\
+9\\
+1
+\end{bmatrix}
+\end{align*}
+$$
+
+#### Scaling Matrices in Unity
+
+~~~C#
+var scale = new Vector3(2,1,3);
+var position = new Vector3(1,2,3);
+Vector3 newPosition = Vector3.zero;
+
+var m0 = Matrix4x4.Scale(scale);
+UnityEngine.Debug.Log(m0);
+//2.00000	0.00000	0.00000	0.00000
+//0.00000	1.00000	0.00000	0.00000
+//0.00000	0.00000	3.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = m0.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(2.0, 2.0, 9.0)
+~~~
+
+And now let's build the matrix ourselves by hand
+
+~~~C#
+var m1 = Matrix4x4.identity;
+m1.m00 *= scale.x;
+m1.m11 *= scale.y;
+m1.m22 *= scale.z;
+UnityEngine.Debug.Log(m1);
+//2.00000	0.00000	0.00000	0.00000
+//0.00000	1.00000	0.00000	0.00000
+//0.00000	0.00000	3.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = m1.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(2.0, 2.0, 9.0)
+~~~
+
+
+
+### Translation Rotation Scale Matrix (TRS)
+
+Since a matrix that is multiplied does the same steps as multiplying by each matrix, we can now come to one of the most commonly used matrices the Translation Rotation Scale Matrix or TRS. This is a combination of the translation, rotation, and scale in a single matrix. The advantage to using this over each matrix is less memory (one matrix) and less calculations (one matrix). You eat the cost once by combining the matrices together and now can take any point and get the new position with a single matrix multiply.
+
+Just like we saw in the rotation matrices we need to combine these matrices in a specific order. There are six permutations $ 3! = 3\times2\times1 = 6 $ of the order we could do it: TRS, TSR, RST, RTS, SRT, STR. The order we want to do the work is scale, then rotate, then translate. Think abbout this for a second because it's quite important. 
+
+Let's take the following properties: translation: $ (1,0,0) $, rotation: $ (0,90,0) $, scale: $ (2,2,2) $. Let's think about this not with a point at the origin but at $ (0,1,0) $.
+
+If we scale, then rotate, then translate
+
+$$
+\begin{equation}
+v = \begin{bmatrix}
+1\\
+0\\
+0
+\end{bmatrix} => \begin{bmatrix}
+2\\
+0\\
+0
+\end{bmatrix} => \begin{bmatrix}
+0\\
+2\\
+0
+\end{bmatrix} => \begin{bmatrix}
+1\\
+2\\
+0
+\end{bmatrix}
+\end{equation}
+$$
+
+What if we instead translate, then rotate, then scale
+
+$$
+\begin{equation}
+v = \begin{bmatrix}
+1\\
+0\\
+0
+\end{bmatrix} => \begin{bmatrix}
+2\\
+0\\
+0
+\end{bmatrix} => \begin{bmatrix}
+0\\
+2\\
+0
+\end{bmatrix} => \begin{bmatrix}
+0\\
+4\\
+0
+\end{bmatrix}
+\end{equation}
+$$
+
+These end up in two completely different points, where the S->R->T is the "correct" way to do it ending up at $(1,2,0)$ and the T->R->S is the "wrong" way to do it ending up at $(0,4,0)$. So you're probably thinking why isn't this called the SRT matrix? Actually the TRS is the right name for it if you think back to the order we multiply and "unpack" the matrix multiplications in. We start with scale being the first multiply to the vector, then we take that result and rotate it, then we take that result and translate it.  You'll end up with a matrix that looks like
+
+$$
+\begin{equation}
+v_{final} = T(R(Sv)) = TRSv
+\end{equation}
+$$
+
+Before we jump into the code I'd like to show you a complete TRS matrix and represent each cell with what it represents in the computation. You will be able to see all of the matrices represented in here wtih translation being in the last column first 3 row, the rotation existing in the first 3x3 cells, and the scaling existing in the diagonal line. Notice how the rotation and the scale overlap, but the translation is by itself.
+
+$$
+\begin{equation}
+TRS =
+\begin{bmatrix}
+xAxisX \times xScale & yAxisX & zAxisX & xPosition\\
+xAxisY & yAxisY \times yScale & zAxisY & yPosition\\
+xAxisZ & yAxisZ & zAxisZ \times zScale & zPosition\\
+0 & 0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+$$
+
+#### TRS Matrix in Unity
+
+~~~C#
+var position = new Vector3(0,1,0);
+var newPosition = Vector3.zero;
+var translate = new Vector3(1,0,0);
+var rotate = Quaternion.Euler(0,90,0);
+var scale = new Vector3(2,2,2);
+var m = Matrix4x4.TRS(translate,rotate,scale);
+UnityEngine.Debug.Log(m);
+//0.00000	0.00000	2.00000	1.00000
+//0.00000	2.00000	0.00000	0.00000
+//-2.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = m.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(1.0, 2.0, 0.0)
+~~~
+
+Now let's do it by computing each matrix ourself and then mulitplying them together
+
+~~~C#
+var mT = Matrix4x4.Translate(translate);
+var mR = Matrix4x4.Rotate(rotate);
+var mS = Matrix4x4.Scale(scale);
+
+var mTRS = mT * mR * mS;
+UnityEngine.Debug.Log(mTRS);
+//0.00000	0.00000	2.00000	1.00000
+//0.00000	2.00000	0.00000	0.00000
+//-2.00000	0.00000	0.00000	0.00000
+//0.00000	0.00000	0.00000	1.00000
+newPosition = mTRS.MultiplyPoint(position);
+UnityEngine.Debug.Log(newPosition);
+//(1.0, 2.0, 0.0)
+~~~
+
+### Model Matrix
+
+You will see this matrix used heavily when it comes down to actually rendering your mesh. This matrix is used to transform from local or object or model space into world or global space. In unity, you can easily grab this by taking the transform's `localToWorldMatrix`. We saw earlier this is a TRS type matrix that brings all points and children into world space relative to the current object.
+
+It's improtant to know that your mesh will have what's called a pivot or center point. This pivot or center point is not necessarily at the center of the object, nor at the bottom center. When you're in unity you will see this pivot as the transform gizmo on the object itself. This pivot is where your object will rotate around. You might be wondering how one goes about changing the pivot, it's quite simple when you create or regenerate the set of vertices for your mesh, your pivot will be at 0,0,0 and the vertices will be relative to that point.
+
+
+
+
+## Further Reading
+
+1. Rules for matrix multiplication: https://www.mathsisfun.com/algebra/matrix-multiplying.html
+1. An online matrix calculator: https://www.mathsisfun.com/algebra/matrix-calculator.html
+1. An online calculator with steps: https://matrixcalc.org/en/
+1. http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/ (50% math, 50% code)
+1. Calculator showing steps: https://matrix.reshish.com/multiplication.php
+1. Gilbert Strang's - Introduction to Linear Algebra (100% math 0% code)
+
+!!! note
+    Introduction to Linear Algebra is the definitive guide to Linear Algebra that is universally heralded as the standard
+
+
+I highly recommend learning Linear Algebra which will allow you to solve even more complicated problems and have a good core understanding of significantly more difficult problems you might encounter. I avoided learning this as long as possible and finally got fed up and just straight up took the time to learn it and I'm now very happy I did.
+
+There is a course at MIT which you can watch the entire set of lectures online for free at: https://www.youtube.com/playlist?list=PLE7DDD91010BC51F8 you will also want to pick up Gilbert Strang's book Introduction to Linear Algebra which is useful as a supplement to the lectures. Please don't feel intimidated by the long list of videos (roughly 34 one hour videos). The information is not nearly as complicated when you watch this series and the knowledge you will gain is monumental. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Quaternions
+
+The math for a Quaternion is less important then understanding why they are used and how they are represented and used. 
+
+They can be thought of in several ways, here are a few:
+
+1. A 4 dimensional rotation (difficult to visualize)
+1. Angle-Axis A vector with a rotation around that vector (like a bike wheel spinning on an axis where the axis can change orientation)
+1. Or simply a set of 3 axis (with reference to the global axis, creating a delta)
+
+Simply it's a rotation represented as a 4 dimensional vector with fields commonly $x$ $y$ $z$ and $w$. You can calcualte a quaternion's magnite as expected
+
+$$
+\begin{equation}
+|q| = \sqrt{x^2 + y^2 + z^2 + w^2}
+\end{equation}
+$$
+
+<div>
+!!! note
+    It's important to remember that $w$ is not the rotation amount of a quaternion
+</div>
+
+## Uses of Quaternions
+
+1. When used properly avoids Gimbal Lock
+1. Less operations when rotating (faster calc)
+1. Supports LERP (through a Sphere Lerp caleed SLERP), matrix lerp is quite different (you need to decompose your matrix)
+1. Dual Quaternions also can be used for skinning efficiently (with different types of artifacts then traditional linear skinning)
+
+## 3 axis
+
+All axis are orthogonal where it points in the z axis (forward), y (up) axis, and x is the cross product between the two axis. For example if you want a rotation that points down the +z and is oriented so up is +y you can create it from the following:
+
+~~~
+var forward = new Vector3(0,0,1); //or Vector3.forward
+var up = new Vector3(0,1,0); //or Vector3.up
+var q = Quaternion.LookRotation(forward,up);
+~~~
+
+This creates a Quaternion `q` that is facing towards the camera in unity. You might be going but where is the rotation as you don't see any degress or radians as you might in euler angles. In euler angles this is equal to 0,0,0, but how can you represent an angle rotation as a set of 3 axis vectors? You can if you consider it's based on how you would rotate from your global axis (unity is left hand y-up so +x is to your left, +y is up, and +z is coming towards you) towards your new axis. An euler rotation again of (0,0,0) means you have a rotation that points forward along +z (blue), has an up vector in the +y (green), and points it's "right" to +x (red). If you have a different rotation of (0,90,0) you are now pointing your forward vector along +x, your up vector along +y, and your right vector along -z. Because these axis are always othogonal (or perpendicular from each other) you only need 2 to calculate a rotation, this is why Quaternion.LookRotation only has two parameters not three (forward, up). The "right" vector can be derived by taking the cross product of the forward and up vector.
+
+## Angle-Axis
+
+If you have a vector you can have an angle that you rotate something around. If you were to take any object and pierce a spear through it you effectively have this. You can now orient the spear (axis) to point in any direction and rotate your object around the spear (angle).
+
+~~~
+var q = Quaternion.AngleAxis(0, Vector3.up);
+~~~
+
+This creates a rotation along an axis pointing up from the ground 0 degrees around it. This will do nothing to our base object if it's already axis alinged pointing towards the +z (screen).
+
+What if we change the axis it's pointing towards though, such as:
+
+~~~
+var q = Quaternion.AngleAxis(0, Vector3.down);
+~~~
+
+It's the same rotation as the first one pointing along the the +y. If instead we change the angle so it's non-zero what will happen, can you predict the rotation of the object if we assign it:
+
+~~~
+cube.transform.rotation = q;
+~~~
+
+Think about the handedness and how it would rotate (clockwise or counter-clockwise), where would your thumb be pointing in order to predict it's rotation? If we do `Quaternion.AngleAxis(45f, Vector3.up);` and then `Quaternion.AngleAxis(45f, Vector3.down);` how will it orient and why?
+
+The answer to the above is if the axis is Vector3.up our left hand thumb will point upwards and the rotation will be clockwise when looking down our thumb, this means the object will turn to it's right (our left) and the forward vector of the object will orient closer to the +x axis. If we flip it to Vector3.down our left hand thumb will now point towards the ground and the reverse will happen, the cube will rotate clockwise while looking down our thumb which means the cube rotates to our right (it's left) and now points closer to the -x axis.
+
+
+
+## Assignment
+
+~~~
+transform.rotation = q;
+~~~
+
+If you assign a `Transform`'s rotation to a quaternion it will align the object so it matches the same orientation of the quaternion (your object will now have it's forward aligned with the quaternion's forward vector, and the up vector will be aligned with the quaternion's up vector and finally the same for the x).
+
+## Adding
+
+~~~
+transform.rotation *= q;
+~~~
+
+Quaternions must be multiplied, they cannot be added. Multiplying is the same thing as adding the rotation to the transform. If you're object points down the -z axis and you multiply a quaternion that faces the +x axis, your object will now point down the -x axis (it does a clockwise rotation 90 degrees when looking down the y axis (near is + far is -))
+
+## Subtracting
+~~~
+transform.rotation = transform.rotation * Quaternion.inverse(q);
+~~~
+
+Quaternions cannot be directly subtracted, and they cannot be directly divided. In order to "subtract" a rotation you must multiply by the inverse of the original quaternion.
+
+## Rotors
+
+It's important to also point out that there is something from geometric algebra called Rotors that provide an alternative to Quaternion, they might be more of your style so I'd encourage you to check them out.
+
+1. https://marctenbosch.com/quaternions/
+
+## Fully Understanding Quaternions
+
+Quaternions are pretty complicated to wrap your head around. There are better resources for understanding both their discovery and how they function. I personally found the video and formula below helpful in understanding them.
+
+https://www.youtube.com/watch?v=jlskQDR8-bY
+
+\begin{equation}
+i^2 = -1 \\\\
+j^2 = -1 \\\\
+k^2 = -1 \\\\
+ijk = -1 \\\\
+i^2=j^2=k^2=ijk=-1 \\\\
+jk=i \\\\
+ki=j \\\\
+\end{equation}
+
+\begin{equation}
+\begin{matrix}
+ & i & j & k \\\\
+i & -1 & k & -j \\\\
+j & -k & -1 & i \\\\
+k & j & -i & -1
+\end{matrix}
+\end{equation}
+
+Representing a Quaternion in a 4x4 Matrix
+https://www.youtube.com/watch?v=3Ki14CsP_9k
+
+The good news is the raw math for them is quite simple and easily understood, take a look at either of these classes in both C++ and C# that handle some of the math
+
+1. https://github.com/ferd36/quaternions/blob/master/include/quaternion.h
+1. https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Quaternion.cs
+
+
+
+
+
+# Additional Resources
+
+Here is a collection of random additional resources that may be of use to you in learning.
+
+Basic vector mathematics: https://www.mathsisfun.com/algebra/vectors.html
+
+Here is an excellent video on the math of quaternions in how to derive and multiply: https://www.youtube.com/watch?v=jlskQDR8-bY
+
+Here is an interactive video that lets you adjust the quaternion in realtime: https://eater.net/quaternions/video/intro
+
+How translation, rotation, scaling gizmos tools work in different engines and systems: http://ed.ilogues.com/2018/06/27/translate-rotate-and-scale-manipulators-in-3d-modelling-programs
+
+Good breakdown of common greek symbols and which mathematics they are used in: https://www.intmath.com/blog/learn-math/math-its-all-greek-to-me-1048
+
+
+http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
+http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
+
+Conversion of Quaternion to 3x3 Matrix (normalized)
+https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/index.htm
+https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/geometric/orthogonal/index.htm
+
+https://www.3dgep.com/understanding-quaternions/
+
+!!! note
+    Unity does this with a Matrix4x4.Rotate method
+
+https://www.youtube.com/watch?v=pUeBOymcEw0&t=2318s
+
+Zach Star (practical uses of matrices)
+https://www.youtube.com/watch?v=4csuTO7UTMo
+https://www.youtube.com/watch?v=rowWM-MijXU
+
+Essence of linear algebra
+https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab&index=2&t=0s
+
+Complex Number Calculator (shows you the steps necessary)
+https://www.symbolab.com/solver/complex-numbers-calculator
+
+Gilbert Strang's lectures on Linear Algebra (Course 18.06 at MIT)
+https://www.youtube.com/playlist?list=PLE7DDD91010BC51F8
+https://ocw.mit.edu/courses/mathematics/18-06-linear-algebra-spring-2010/
+
+
+
+
+[1]: https://en.wikipedia.org/wiki/Right-hand_rule
+[2]: https://forums.unrealengine.com/community/general-discussion/46691-z-up-vs-y-up-the-solution-to-the-debate-lies-within
+[Freya Holmér]: https://pbs.twimg.com/media/DTbWux8WkAUOZZx?format=jpg&name=small
+
+[Tim Sweeney Sorry]: https://twitter.com/TimSweeneyEpic/status/952661474501111808
+[Freya Chart]: https://twitter.com/FreyaHolmer/status/644881436982575104
+
+
+Unity Matrix4x4
+https://answers.unity.com/questions/1359718/what-do-the-values-in-the-matrix4x4-for-cameraproj.html
+
+Rotation Matrices
+http://planning.cs.uiuc.edu/node102.html
+

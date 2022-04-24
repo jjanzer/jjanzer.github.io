@@ -1,0 +1,11 @@
+  <footer>
+  {{ partial "foot_custom.html" . }}
+  {{ with .Site.Params.footer }}
+  <hr/>
+  {{ . | markdownify }}
+  {{ end }}
+  </footer>
+  {{ if .Params.mathjax }}{{ partial "mathjax.html" . }}{{ end }}
+  {{ if .Params.markdeep }}{{ partial "markdeep.html" . }}{{ end }}
+  </body>
+</html>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://example.org/</loc>
+    <lastmod>2021-10-10T17:04:28-06:00</lastmod>
+  </url><url>
+    <loc>http://example.org/posts/il2cpp_dynamic_linker_errors/</loc>
+    <lastmod>2021-10-10T17:04:28-06:00</lastmod>
+  </url><url>
+    <loc>http://example.org/posts/</loc>
+    <lastmod>2021-10-10T17:04:28-06:00</lastmod>
+  </url><url>
+    <loc>http://example.org/posts/filament_offscreen_renderering/</loc>
+    <lastmod>2021-10-06T22:13:11-06:00</lastmod>
+  </url><url>
+    <loc>http://example.org/categories/</loc>
+  </url><url>
+    <loc>http://example.org/tags/</loc>
+  </url>
+</urlset>

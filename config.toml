@@ -1,0 +1,45 @@
+baseURL = 'http://jjanzer.github.io'
+languageCode = 'en-us'
+title = 'Jesse Janzer'
+theme = "xmin"
+publishDir = "docs"
+
+[params]
+  author = 'Jesse Janzer'
+  copy = 'Jesse Janzer'
+  description = 'test 123'
+  omit_header_text = true
+  background_color_class = "bg-dark-gray"
+
+#Allows html verbatim in markdown
+[markup]
+	defaultMarkdownHandler = 'goldmark'
+	#defaultMarkdownHandler = 'blackFriday'
+
+[markup.goldmark.renderer]
+  unsafe= true
+[markup.blackFriday]
+  skipHTML = false
+
+[taxonomies]
+  category = 'categories'
+  series = 'series'
+  tag = 'tags'
+
+[menu]
+	[[menu.main]]
+		identifier = "home"
+		name = "home"
+		url =  ""
+		weight = 1
+	[[menu.main]]
+		identifier = "posts"
+		name = "posts"
+		url = "/posts/"
+		weight = 2
+	[[menu.main]]
+		identifier = "readme"
+		name = "readme"
+		url = "/readme/"
+		weight = 3
+
