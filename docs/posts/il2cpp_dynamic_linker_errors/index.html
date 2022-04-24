@@ -2,150 +2,50 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Managed and Unmanaged Library Interfaces with IL2CPP in Unity | Jesse Janzer</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="The Problem with Precompiled Managed Libraries in Unity I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C&#43;&#43; libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not officially supported by Apple like other platforms (Windows, Linux, macOS, Android). So far we&rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&rsquo;ve avoided having different managed dlls for each platform.">
-    <meta name="generator" content="Hugo 0.88.1" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    
-      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
-    
-
-    
-<link rel="stylesheet" href="/ananke/css/main.min.css" >
-
-
-
-
-    
-      
-
-    
-
-    
-    
-    <meta property="og:title" content="Managed and Unmanaged Library Interfaces with IL2CPP in Unity" />
-<meta property="og:description" content="The Problem with Precompiled Managed Libraries in Unity I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C&#43;&#43; libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not officially supported by Apple like other platforms (Windows, Linux, macOS, Android). So far we&rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&rsquo;ve avoided having different managed dlls for each platform." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="http://example.org/posts/il2cpp_dynamic_linker_errors/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-10-10T17:04:28-06:00" />
-<meta property="article:modified_time" content="2021-10-10T17:04:28-06:00" />
-
-<meta itemprop="name" content="Managed and Unmanaged Library Interfaces with IL2CPP in Unity">
-<meta itemprop="description" content="The Problem with Precompiled Managed Libraries in Unity I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C&#43;&#43; libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not officially supported by Apple like other platforms (Windows, Linux, macOS, Android). So far we&rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&rsquo;ve avoided having different managed dlls for each platform."><meta itemprop="datePublished" content="2021-10-10T17:04:28-06:00" />
-<meta itemprop="dateModified" content="2021-10-10T17:04:28-06:00" />
-<meta itemprop="wordCount" content="1524">
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Managed and Unmanaged Library Interfaces with IL2CPP in Unity"/>
-<meta name="twitter:description" content="The Problem with Precompiled Managed Libraries in Unity I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C&#43;&#43; libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not officially supported by Apple like other platforms (Windows, Linux, macOS, Android). So far we&rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&rsquo;ve avoided having different managed dlls for each platform."/>
-
-	
   </head>
 
-  <body class="ma0 avenir bg-near-white">
-
-    
-   
-  
-
-  <header>
-    <div class="bg-dark-gray">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l justify-between items-center center">
-    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+  <body>
+    <nav>
+    <ul class="menu">
       
-        Jesse Janzer
+      <li><a href="/">home</a></li>
       
-    </a>
-    <div class="flex-l items-center">
+      <li><a href="/posts/">posts</a></li>
       
-
+      <li><a href="/readme/">readme</a></li>
       
-      
+    </ul>
+    <hr/>
+    </nav>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    </div>
-  </div>
+	<aside>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-problem-with-precompiled-managed-libraries-in-unity">The Problem with Precompiled Managed Libraries in Unity</a></li>
+    <li><a href="#a-solution">A Solution</a>
+      <ul>
+        <li><a href="#steps-to-support-one-managed-library-with-il2cpp-and-native-libraries">Steps To Support One Managed Library with IL2CPP and native Libraries</a></li>
+      </ul>
+    </li>
+    <li><a href="#dynamic-libraries-on-ios">Dynamic Libraries on iOS</a></li>
+  </ul>
 </nav>
-
-    </div>
-  </header>
-
-
-
-    <main class="pb7" role="main">
-      
-  
-  <article class="flex-wrap justify-between mw9 center ph3">
-    <header class="mt4 w-100">
-      <aside class="instapaper_ignoref b helvetica tracked">
-          
-        POSTS
-      </aside>
-      
+    </aside>
+<div class="article-meta">
+ 
+<h1><span class="title">Managed and Unmanaged Library Interfaces with IL2CPP in Unity</span></h1>
 
 
+<h2 class="date">2021/10/10</h2>
+</div>
 
-
-  <div id="sharing" class="mt3">
-
-    
-    <a href="https://www.facebook.com/sharer.php?u=http://example.org/posts/il2cpp_dynamic_linker_errors/" class="facebook no-underline" aria-label="share on Facebook">
-      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
-
-    </a>
-
-    
-    
-    <a href="https://twitter.com/share?url=http://example.org/posts/il2cpp_dynamic_linker_errors/&amp;text=Managed%20and%20Unmanaged%20Library%20Interfaces%20with%20IL2CPP%20in%20Unity" class="twitter no-underline" aria-label="share on Twitter">
-      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
-
-    </a>
-
-    
-    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http://example.org/posts/il2cpp_dynamic_linker_errors/&amp;title=Managed%20and%20Unmanaged%20Library%20Interfaces%20with%20IL2CPP%20in%20Unity" class="linkedin no-underline" aria-label="share on LinkedIn">
-      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
-</svg>
-
-    </a>
-  </div>
-
-
-      <h1 class="f1 athelas mt3 mb1">Managed and Unmanaged Library Interfaces with IL2CPP in Unity</h1>
-      
-      <p class="tracked">
-          By <strong>
-          
-              Jesse Janzer
-          
-          </strong>
-      </p>
-      
-      
-      
-      <time class="f6 mv4 dib tracked" datetime="2021-10-10T17:04:28-06:00">October 10, 2021</time>
-      
-
-      
-      
-    </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-auto-l"><h1 id="the-problem-with-precompiled-managed-libraries-in-unity">The Problem with Precompiled Managed Libraries in Unity</h1>
+<main>
+<h2 id="the-problem-with-precompiled-managed-libraries-in-unity">The Problem with Precompiled Managed Libraries in Unity</h2>
 <p>I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C++ libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not <em>officially supported by Apple</em> like other platforms (Windows, Linux, macOS, Android). So far we&rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&rsquo;ve avoided having different managed dlls for each platform.</p>
 <p>So the scenrio is the following you have C/C++ dynamic libraries for some platforms such as Windows <code>.dll</code>, macOS <code>.bundle</code> or <code>.dylib</code>, Linux <code>.so</code>, and Android <code>.so</code> and you have static libraries for iOS <code>.a</code>, tvOS <code>.a</code>, watchOS <code>.a</code>. How do you compile your managed C# Unity plugin into a single dynamic library that works on all platforms.</p>
 <p>This page will describe a method for allowing you to continue to ship a single non-platform specific precompiled C# DLL without also shipping loose C#, though if you plan to support iOS and other platforms using IL2CPP you will need a loose C file as well.</p>
@@ -183,11 +83,11 @@
 <span style="color:#a6e22e">[DllImport(lib_name)]</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
 </code></pre></div><p>You could load your plugin manually for each platform such as using <code>LoadLibrary</code>  in <code>kernel32</code> on Windows. This leads to maintaining dynamic injection of the libraries per-platform and then on platforms where you can&rsquo;t dynamically, such as iOS, rely on loading a module/plugin with the <code>__Internal</code> trick. Hot plugin reloading does make developers lives easier when working on the native libraries, but increases your complexity and maintenance.</p>
-<h1 id="a-solution">A Solution</h1>
+<h2 id="a-solution">A Solution</h2>
 <p>Since we&rsquo;re making a single managed we can&rsquo;t rely on the compile time options, and we can&rsquo;t rely on swapping strings out of the <code>DllImport</code> attributes. We could ship loose C# files to try to work around this but we want to avoid this for various reasons. This leaves us with an option; which is maintaining two classes where one class handles the dynamic import and the other class handles the static import. Then you&rsquo;ll have a wrapper class that determines which class to use at runtime.</p>
 <p>The way we&rsquo;ll accomplish this is having an inteface that defines our C interface but doesn&rsquo;t implement them. Then we&rsquo;ll create two classes that implement the static methods from the interface and expose a wrapper prefix function that is not static. We&rsquo;ll also create an overall wrapper with the same method names as our C API so we don&rsquo;t externally call the wrapper functions. Finally we&rsquo;ll create some helpers to tell us if we should load the static or dynamic version of our interface class.</p>
 <p>There&rsquo;s just one more thing we need to do now, which is we need to create a stub C interface/implementation file that is used for the static IL2CPP process if you plan to support IL2CPP targets outside of iOS. Without this you will get linker failures during builds with IL2CPP for platforms that are expecting dynamic linking instead of static linking (ie: non iOS targets such as on Android). This is kind of cheating as we now have to ship a <em>loose</em> source file, but I find this better as there is pretty much no logic in the C file and it&rsquo;s only used when using IL2CPP.</p>
-<h2 id="steps-to-support-one-managed-library-with-il2cpp-and-native-libraries">Steps To Support One Managed Library with IL2CPP and native Libraries</h2>
+<h3 id="steps-to-support-one-managed-library-with-il2cpp-and-native-libraries">Steps To Support One Managed Library with IL2CPP and native Libraries</h3>
 <p>To summarize you need to complete the following steps:</p>
 <ol>
 <li>Create an interface that holds all your C APIs but add a prefix such as <code>call_</code> to them</li>
@@ -210,8 +110,8 @@
 <li>Finally add your C function stub implemention to your stub file</li>
 </ol>
 <p>Below is a blueprint for how one can implement a system like this.</p>
-<h3 id="unity-library-interface-example">Unity Library Interface Example</h3>
-<h4 id="mylibcs">MyLib.cs</h4>
+<h4 id="unity-library-interface-example">Unity Library Interface Example</h4>
+<h5 id="mylibcs">MyLib.cs</h5>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLib</span>
 {
 	<span style="color:#75715e">//static linking
@@ -219,7 +119,8 @@
 	<span style="color:#75715e">//dynamic linking
 </span><span style="color:#75715e"></span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> LibNameDynamic = <span style="color:#e6db74">&#34;MyLib&#34;</span>
 
-	<span style="color:#75715e">//So why aren&#39;t we using bool? instead of 2 vars, it&#39;s b/c there&#39;s a cost to casting the IsStatic function to a regular bool and it&#39;s faster this way
+	<span style="color:#75715e">//So why aren&#39;t we using bool? instead of 2 vars
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// it&#39;s b/c there&#39;s a cost to casting the IsStatic function to a regular bool and it&#39;s faster this way
 </span><span style="color:#75715e"></span>	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> <span style="color:#ae81ff">_</span>isStatic = <span style="color:#66d9ef">false</span>;
 	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> <span style="color:#ae81ff">_</span>isStaticCalc = <span style="color:#66d9ef">false</span>; <span style="color:#75715e">//have we checked?
 </span><span style="color:#75715e"></span>	<span style="color:#75715e">/// &lt;summary&gt;
@@ -286,12 +187,12 @@
 		<span style="color:#66d9ef">return</span> MyLib.call_mylib_add(a, b);
 	}
 }
-</code></pre></div><h4 id="imylibcs">IMyLib.cs</h4>
+</code></pre></div><h5 id="imylibcs">IMyLib.cs</h5>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> IMyLib
 {
 	<span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
 }
-</code></pre></div><h4 id="nativedynamiccs">NativeDynamic.cs</h4>
+</code></pre></div><h5 id="nativedynamiccs">NativeDynamic.cs</h5>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibDynamic</span> : IMyLib
 {
 <span style="color:#a6e22e">	[DllImport(MyLib.LibNameDynamic)]</span>
@@ -302,7 +203,7 @@
 		<span style="color:#66d9ef">return</span> mylib_add(a, b);
 	}
 }
-</code></pre></div><h4 id="nativestaticcs">NativeStatic.cs</h4>
+</code></pre></div><h5 id="nativestaticcs">NativeStatic.cs</h5>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibStatic</span> : IMyLib
 {
 <span style="color:#a6e22e">	[DllImport(MyLib.LibNameStatic)]</span>
@@ -313,57 +214,25 @@
 		<span style="color:#66d9ef">return</span> mylib_add(a, b);
 	}
 }
-</code></pre></div><h4 id="nativestubc">NativeStub.c</h4>
+</code></pre></div><h5 id="nativestubc">NativeStub.c</h5>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mylib_add</span>(){}
 </code></pre></div><p>Notice how the static and dynamic classes are identical outside of the library name in the <code>DllImport</code> attribute? This makes it fairly easy to maintain as you simply need to copy/paste each method. You could also write a script that generates the actual calls from your interface if desired as well.</p>
 <p>Also notice that your stub C file doesn&rsquo;t need to match the interface at all, you can simply use void return types and no arguments for the declaration and empty definitions.</p>
 <p>So now you can compile your C# files together as a single managed DLL and leave a copy of your stub C file next to it. Since Unity treats loose C and C++ files as plugins ensure you mark to exclude the C file from <code>iOS</code>, <code>tvOS</code>, and <code>watchOS</code> as those platforms are the ones that require static linking of your library in Unity. When distributing your plugins make sure you include the .meta (or use a .unitypackage) which will maintain the appropriate target inclusion/exclusions.</p>
 <p>Now you&rsquo;re all set, no need to maintain multiple managed DLL files or loose C# scripts and you can also hide most of your interface inside your library if you don&rsquo;t plan on exposing it publicly as well.</p>
-<h1 id="dynamic-libraries-on-ios">Dynamic Libraries on iOS</h1>
+<h2 id="dynamic-libraries-on-ios">Dynamic Libraries on iOS</h2>
 <p>If you&rsquo;re curious about dyanic libraries on iOS this <em>does work</em> but it&rsquo;s not allowed for apps shipping via the App Store. Unity also will assume you are using a static library, so you&rsquo;ll need to manually copy your .dylib file and manually include it into your XCode project.</p>
 <p>Initially this is how we first started distributing Astra, but it requires additional steps after your iOS build in XCode so it&rsquo;s not a &ldquo;one button&rdquo; build without adding additional build scripts, and ultimately it won&rsquo;t work for the App Store.</p>
 <p><a href="https://stackoverflow.com/questions/4733847/can-you-build-dynamic-libraries-for-ios-and-load-them-at-runtime">Additional Info</a></p>
-<ul class="pa0">
+
+</main>
+
+  <footer>
   
-</ul>
-<div class="mt6 instapaper_ignoref">
-      
-      
-      </div>
-    </div>
-
-    <aside class="w-30-l mt6-l">
-
-
-
-
-</aside>
-
-  </article>
-
-    </main>
-    <footer class="bg-dark-gray bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://example.org/" >
-    &copy;  Jesse Janzer 2021 
-  </a>
-    <div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-  </div>
-<style>.md h1, .md .nonumberh1 {page-break-before:always}</style>
+  
+  </footer>
+  
+  
   </body>
 </html>
+

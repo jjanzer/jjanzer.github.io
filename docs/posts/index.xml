@@ -2,27 +2,46 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Jesse Janzer</title>
-    <link>http://example.org/posts/</link>
+    <link>http://jjanzer.github.io/posts/</link>
     <description>Recent content in Posts on Jesse Janzer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 10 Oct 2021 17:04:28 -0600</lastBuildDate><atom:link href="http://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://jjanzer.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Working with procedural meshes in Assimp</title>
+      <link>http://jjanzer.github.io/posts/assimp/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/posts/assimp/</guid>
+      <description>Assimp or Open Asset Import Library is a really nice library for handling lots of various 3D model formats such as OBJ, glTF, and FBX. It can both import and export many formats.
+I wanted to make a short guide on some of the more tricky things to do or less well documented parts of the library such as procedural meshes (such as making meshes from another system and wanting to export them using assimp).</description>
+    </item>
+    
+    <item>
+      <title>An Introduction to Practical 3D Math for Programmers</title>
+      <link>http://jjanzer.github.io/posts/linear_algebra/</link>
+      <pubDate>Mon, 11 Oct 2021 08:41:57 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/posts/linear_algebra/</guid>
+      <description>## Preface There are a lot of guides for 3D math that seem to be written by people quite good at math. If instead you&#39;re like me and better at programming than math this is the guide I wish I had when I first started learning OpenGL, Direct3D, Shaders, Unity, and Unreal. I struggled a lot reading other people&#39;s guides, white papers, thesis documents, books, and videos. It felt like everyone was speaking a language I didn&#39;t know.</description>
+    </item>
+    
     <item>
       <title>Managed and Unmanaged Library Interfaces with IL2CPP in Unity</title>
-      <link>http://example.org/posts/il2cpp_dynamic_linker_errors/</link>
+      <link>http://jjanzer.github.io/posts/il2cpp_dynamic_linker_errors/</link>
       <pubDate>Sun, 10 Oct 2021 17:04:28 -0600</pubDate>
       
-      <guid>http://example.org/posts/il2cpp_dynamic_linker_errors/</guid>
+      <guid>http://jjanzer.github.io/posts/il2cpp_dynamic_linker_errors/</guid>
       <description>The Problem with Precompiled Managed Libraries in Unity I work on an SDK that has a non-platform specific compiled managed C# library along with unmanaged C++ libaries. There are peculirarirties with iOS/tvOS/watchOS where you will want to use a static library as using a dynamic library is not officially supported by Apple like other platforms (Windows, Linux, macOS, Android). So far we&amp;rsquo;ve avoided having loose C# helper scripts alongside our managed C# dll and also we&amp;rsquo;ve avoided having different managed dlls for each platform.</description>
     </item>
     
     <item>
-      <title>Filament_offscreen_renderering</title>
-      <link>http://example.org/posts/filament_offscreen_renderering/</link>
+      <title>Rendering Offscreen with Filament using Render Targets</title>
+      <link>http://jjanzer.github.io/posts/filament_offscreen_renderering/</link>
       <pubDate>Wed, 06 Oct 2021 22:13:11 -0600</pubDate>
       
-      <guid>http://example.org/posts/filament_offscreen_renderering/</guid>
-      <description></description>
+      <guid>http://jjanzer.github.io/posts/filament_offscreen_renderering/</guid>
+      <description>I was making a small application for viewing 3D asets and wanted to use Google&amp;rsquo;s Filament renderer. It&amp;rsquo;s not too hard to get started with this, but I was already using my own OpenGL context and didn&amp;rsquo;t want to yield full control over to Filament. Instead I wanted to render the model on an offscreen buffer and then display it on my main window. Surprisingly this is quite difficult to figure out how and the documentation and examples don&amp;rsquo;t cover this case well.</description>
     </item>
     
   </channel>

@@ -2,9 +2,91 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Jesse Janzer</title>
-    <link>http://example.org/tags/</link>
+    <link>http://jjanzer.github.io/tags/</link>
     <description>Recent content in Tags on Jesse Janzer</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="http://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://jjanzer.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>3d</title>
+      <link>http://jjanzer.github.io/tags/3d/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/3d/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>assimp</title>
+      <link>http://jjanzer.github.io/tags/assimp/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/assimp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>fbx</title>
+      <link>http://jjanzer.github.io/tags/fbx/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/fbx/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>gltf</title>
+      <link>http://jjanzer.github.io/tags/gltf/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/gltf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mesh</title>
+      <link>http://jjanzer.github.io/tags/mesh/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/mesh/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>models</title>
+      <link>http://jjanzer.github.io/tags/models/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/models/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>obj</title>
+      <link>http://jjanzer.github.io/tags/obj/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/obj/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>opengl</title>
+      <link>http://jjanzer.github.io/tags/opengl/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/opengl/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>unity</title>
+      <link>http://jjanzer.github.io/tags/unity/</link>
+      <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
+      
+      <guid>http://jjanzer.github.io/tags/unity/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Working with procedural meshes in Assimp | Jesse Janzer</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a href="/">home</a></li>
+      
+      <li><a href="/posts/">posts</a></li>
+      
+      <li><a href="/readme/">readme</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+	<aside>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#coordinates-handedness-and-units">Coordinates, Handedness, and Units</a></li>
+    <li><a href="#mixing-primitives">Mixing Primitives</a></li>
+    <li><a href="#submesh-and-materials">Submesh and Materials</a></li>
+    <li><a href="#bones">Bones</a>
+      <ul>
+        <li><a href="#bindpose">Bindpose</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </aside>
+<div class="article-meta">
+ 
+<h1><span class="title">Working with procedural meshes in Assimp</span></h1>
+
+
+<h2 class="date">2021/12/11</h2>
+</div>
+
+<main>
+<p>Assimp or Open Asset Import Library is a really nice library for handling lots of various 3D model formats such as OBJ, glTF, and FBX. It can both import and export many formats.</p>
+<p>I wanted to make a short guide on some of the more tricky things to do or less well documented parts of the library such as procedural meshes (such as making meshes from another system and wanting to export them using assimp).</p>
+<h2 id="coordinates-handedness-and-units">Coordinates, Handedness, and Units</h2>
+<p>Assimp is right handed with y up. There is no special consideration of units in regards but does expose things like <code>UnitScaleFactor</code>. When importing assets you can view these via the <code>scene-&gt;mMetaData</code> such as something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">if</span>(scene<span style="color:#f92672">-&gt;</span>mMetaData <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>)
+{
+	<span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> scene<span style="color:#f92672">-&gt;</span>mMetaData<span style="color:#f92672">-&gt;</span>mNumProperties; i<span style="color:#f92672">++</span>)
+	{
+		<span style="color:#66d9ef">const</span> aiString<span style="color:#f92672">*</span> key;
+		<span style="color:#66d9ef">const</span> aiMetadataEntry<span style="color:#f92672">*</span> entry;
+		<span style="color:#66d9ef">auto</span> res <span style="color:#f92672">=</span> scene<span style="color:#f92672">-&gt;</span>mMetaData<span style="color:#f92672">-&gt;</span>Get(i,key,entry);
+		<span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>res)
+		{
+			std<span style="color:#f92672">::</span>cerr <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Failed to get property at index: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+			<span style="color:#66d9ef">continue</span>;
+		}
+
+		<span style="color:#66d9ef">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_BOOL)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; bool: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#f92672">*</span>(<span style="color:#66d9ef">bool</span> <span style="color:#f92672">*</span>) entry<span style="color:#f92672">-&gt;</span>mData) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_INT32)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; int32: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#f92672">*</span>(<span style="color:#66d9ef">int32_t</span> <span style="color:#f92672">*</span>) entry<span style="color:#f92672">-&gt;</span>mData) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_UINT64)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; uint64: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#f92672">*</span>(<span style="color:#66d9ef">uint64_t</span> <span style="color:#f92672">*</span>) entry<span style="color:#f92672">-&gt;</span>mData) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_FLOAT)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; float: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span>(<span style="color:#f92672">*</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>) entry<span style="color:#f92672">-&gt;</span>mData) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_DOUBLE)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; double: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#f92672">*</span>(<span style="color:#66d9ef">double</span> <span style="color:#f92672">*</span>) entry<span style="color:#f92672">-&gt;</span>mData) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_AISTRING)
+		{
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; string: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> ((aiString <span style="color:#f92672">*</span>)entry<span style="color:#f92672">-&gt;</span>mData)<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_AIVECTOR3D)
+		{
+			<span style="color:#66d9ef">auto</span> v3 <span style="color:#f92672">=</span> ((aiVector3D <span style="color:#f92672">*</span>)entry<span style="color:#f92672">-&gt;</span>mData);
+			std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; vec3: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> key<span style="color:#f92672">-&gt;</span>C_Str() <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; =&gt; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> v3<span style="color:#f92672">-&gt;</span>x <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;,&#34;</span> <span style="color:#f92672">&lt;&lt;</span> v3<span style="color:#f92672">-&gt;</span>y <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;,&#34;</span> <span style="color:#f92672">&lt;&lt;</span> v3<span style="color:#f92672">-&gt;</span>z <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_AIMETADATA)
+		{
+			<span style="color:#75715e">//TODO recurse into the meta data
+</span><span style="color:#75715e"></span>
+		} <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(entry<span style="color:#f92672">-&gt;</span>mType <span style="color:#f92672">==</span> aiMetadataType<span style="color:#f92672">::</span>AI_META_MAX)
+		{
+
+		}
+	}
+}
+</code></pre></div><p>For example it might produce output like:</p>
+<pre tabindex="0"><code> int32: UpAxis =&gt; 1
+ int32: UpAxisSign =&gt; 1
+ int32: FrontAxis =&gt; 2
+ int32: FrontAxisSign =&gt; 1
+ int32: CoordAxis =&gt; 0
+ int32: CoordAxisSign =&gt; 1
+ int32: OriginalUpAxis =&gt; 2
+ int32: OriginalUpAxisSign =&gt; 1
+ float: UnitScaleFactor =&gt; 1
+ float: OriginalUnitScaleFactor =&gt; 1
+ int32: FrameRate =&gt; 6
+ uint64: TimeSpanStart =&gt; 0
+ uint64: TimeSpanStop =&gt; 0
+ float: CustomFrameRate =&gt; -1
+ string: SourceAsset_FormatVersion =&gt; 7400
+ string: SourceAsset_Generator =&gt; FBX SDK/FBX Plugins version 2018.1
+ string: SourceAsset_Format =&gt; Autodesk FBX Importer
+</code></pre><p>In regards to the terms such as the <code>Axis</code> and <code>Sign</code> they are coming from FBX&rsquo;s API. For Sign +1 is forward and -1 is away or +1 is up and -1 is down or +1 is right and -1 is left. In other words if you have Y going up the the sign should be 1. In pretty much all systems Y or Z is up, X is either left or right, and Y or Z is forward/backward. If you&rsquo;re confused about handedness see <a href="http://jjanzer.github.io/posts/linear_algebra/">Practical 3D Math for Programmers</a>. In this case UpAxis is pointing up and down, FrontAxis is pointing towards or away, and CoordAxis is the crossproduct so the left and right. The Axis values can be 0, 1, or 2 which represent x, y, or z respectively. So if you have Up:1 UpSign:1 Front:2 FrontSign:1 and Coord:0,CoordSign:1 that would me +Y up, +X right, and +Z forward, which conversely means you&rsquo;re using right hand system for the imported scene. This dynamic axis for the scene is something fairly unique to FBX files, glTF has a specific coordinate handling as it&rsquo;s standard (+Y up, +Z forward, +X right, righ handed with units as meters, angles as radians, and b/c it&rsquo;s right handed rotations are counter clockwise).</p>
+<p>When you are creating your meshes from scratch for assimp you probably want to convert them into their format (right handed, y up which follows OpenGL and Maya). In my case we are left handed which follows Unity and DirectX). There are ways to have assimp convert for you in it&rsquo;s post processing step (which most work in both importing and exporting) but I found it easier to just convert into their system and avoid confusion.</p>
+<p>See also:</p>
+<ol>
+<li><code>aiProcess_MakeLeftHanded</code> - flips from right hand to left hand axis (y is still up)</li>
+<li><code>aiProcess_FlipWindingOrder</code> - flips from counter clockwise to clockwise</li>
+<li><code>aiProcess_FlipUVs</code> - flips the y of UVs</li>
+</ol>
+<p>See also:</p>
+<ol>
+<li><a href="https://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_axis_system_html">https://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_axis_system_html</a></li>
+<li><a href="https://github.com/arturoc/ofxFBX/blob/master/libs/fbxsdk/include/fbxsdk/scene/fbxaxissystem.h">https://github.com/arturoc/ofxFBX/blob/master/libs/fbxsdk/include/fbxsdk/scene/fbxaxissystem.h</a></li>
+</ol>
+<h2 id="mixing-primitives">Mixing Primitives</h2>
+<p>When mixing triangles and quads (or other polygons) you might have another mesh with the same name as well for both a set of tris and quads. When you deal with this in a game engine such as Unity it will often convert all the quad and other polygons into triangles. Note, unity does allow you to keep quad data in file import settings but your mesh will still be triangulated as well in the main set of triangles. When dealing with this in a library like assimp you will have raw access to the original data without it being merged.</p>
+<p>A triangle such as this:</p>
+<p><img src="https://i.imgur.com/gakZihb.png" alt=""></p>
+<pre tabindex="0"><code>0: Plane mat: 0 DefaultMaterial verts: 3 faces: 1 bones: 0 triangles
+</code></pre><p>A quad plus two triangles such as this:</p>
+<p><img src="https://i.imgur.com/WCBObpx.png" alt=""></p>
+<pre tabindex="0"><code>0: Plane mat: 0 DefaultMaterial verts: 6 faces: 2 bones: 0 triangles
+1: Plane mat: 0 DefaultMaterial verts: 4 faces: 1 bones: 0 polygons
+</code></pre><h2 id="submesh-and-materials">Submesh and Materials</h2>
+<p>The terminology around submeshes vs materials is a little loose between engines and DCC (Digital Content Creator). I generally like the term Unity uses; in which is a submesh contains a subset of the collection of all faces for a mesh and has one material (though the material may be null). In other words all vertices belong to the mesh and then the faces are owned by a submesh. How this gets assigned is handled by the material assignments from the DCC.</p>
+<p>Because assimp only allows one material per mesh I was wondering how they handled the concept of a submesh (both in import and export). Essentially there will be multiple meshes with the same name repeeated for each submesh/material with a subset of the mesh primitives (vertices/uvs/etc).</p>
+<p>An example of rectangle with two materials &ldquo;Left&rdquo; and &ldquo;Right&rdquo;:</p>
+<p><img src="https://i.imgur.com/tvUzUtY.png" alt=""></p>
+<pre tabindex="0"><code>0: Plane.001 mat: 0 Left verts: 4 faces: 1 bones: 0 polygons
+1: Plane.001 mat: 1 Right verts: 4 faces: 1 bones: 0 polygons
+</code></pre><p>Unity&rsquo;s importer:</p>
+<p><img src="https://i.imgur.com/IsOhmhh.png" alt=""></p>
+<p>Unity will import this as a single mesh with 2 submeshes, 6 verts, 4 faces, 2 materials.</p>
+<h2 id="bones">Bones</h2>
+<p>Bones in assimp are quite similar to the bones you&rsquo;d use in a game engine. They are represented by a series of <code>aiNode</code> for the transform data in a tree fashion along with an array of <code>aiBone</code> that reference the node not by reference or slot but instead by name. It&rsquo;s important that the names must match exactly. The bones array instead will be referenced by the <code>aiMesh</code>.</p>
+<h3 id="bindpose">Bindpose</h3>
+<p>Each bone should have an <code>mOffsetMatrix</code> that is analagous to the <code>Mesh.bindposes</code> in Unity. You need to be careful about your own coordinate system when converting the transform data into assimp. In my case our source data was coming in as a left hand y up system so I decided to rotate and swizzle my data from my source to assimp&rsquo;s system that way I didn&rsquo;t have to rely on any post processing quirks.</p>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  
+  
+  </body>
+</html>
+
