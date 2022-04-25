@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>mesh on Jesse Janzer</title>
-    <link>http://jjanzer.github.io/tags/mesh/</link>
+    <link>http://stunlock.gg/tags/mesh/</link>
     <description>Recent content in mesh on Jesse Janzer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://jjanzer.github.io/tags/mesh/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://stunlock.gg/tags/mesh/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Working with procedural meshes in Assimp</title>
-      <link>http://jjanzer.github.io/posts/assimp/</link>
+      <link>http://stunlock.gg/posts/assimp/</link>
       <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
       
-      <guid>http://jjanzer.github.io/posts/assimp/</guid>
+      <guid>http://stunlock.gg/posts/assimp/</guid>
       <description>Assimp or Open Asset Import Library is a really nice library for handling lots of various 3D model formats such as OBJ, glTF, and FBX. It can both import and export many formats.
 I wanted to make a short guide on some of the more tricky things to do or less well documented parts of the library such as procedural meshes (such as making meshes from another system and wanting to export them using assimp).</description>
     </item>

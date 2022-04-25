@@ -2,27 +2,27 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>3d on Jesse Janzer</title>
-    <link>http://jjanzer.github.io/tags/3d/</link>
+    <link>http://stunlock.gg/tags/3d/</link>
     <description>Recent content in 3d on Jesse Janzer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://jjanzer.github.io/tags/3d/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 Dec 2021 10:18:00 -0600</lastBuildDate><atom:link href="http://stunlock.gg/tags/3d/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Working with procedural meshes in Assimp</title>
-      <link>http://jjanzer.github.io/posts/assimp/</link>
+      <link>http://stunlock.gg/posts/assimp/</link>
       <pubDate>Sat, 11 Dec 2021 10:18:00 -0600</pubDate>
       
-      <guid>http://jjanzer.github.io/posts/assimp/</guid>
+      <guid>http://stunlock.gg/posts/assimp/</guid>
       <description>Assimp or Open Asset Import Library is a really nice library for handling lots of various 3D model formats such as OBJ, glTF, and FBX. It can both import and export many formats.
 I wanted to make a short guide on some of the more tricky things to do or less well documented parts of the library such as procedural meshes (such as making meshes from another system and wanting to export them using assimp).</description>
     </item>
     
     <item>
       <title>Rendering Offscreen with Filament using Render Targets</title>
-      <link>http://jjanzer.github.io/posts/filament_offscreen_renderering/</link>
+      <link>http://stunlock.gg/posts/filament_offscreen_renderering/</link>
       <pubDate>Wed, 06 Oct 2021 22:13:11 -0600</pubDate>
       
-      <guid>http://jjanzer.github.io/posts/filament_offscreen_renderering/</guid>
+      <guid>http://stunlock.gg/posts/filament_offscreen_renderering/</guid>
       <description>I was making a small application for viewing 3D asets and wanted to use Google&amp;rsquo;s Filament renderer. It&amp;rsquo;s not too hard to get started with this, but I was already using my own OpenGL context and didn&amp;rsquo;t want to yield full control over to Filament. Instead I wanted to render the model on an offscreen buffer and then display it on my main window. Surprisingly this is quite difficult to figure out how and the documentation and examples don&amp;rsquo;t cover this case well.</description>
     </item>
     
