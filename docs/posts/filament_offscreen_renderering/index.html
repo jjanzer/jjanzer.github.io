@@ -48,147 +48,147 @@
 <p><em>Note</em> currently rendering this way is only supported when using OpenGL.</p>
 <h2 id="step-1---initialize-opengl-contexts">Step 1 - Initialize OpenGL Contexts</h2>
 <p>For the most part you will create all of your SDL window handling as typical, of importance is obtaining the OpenGL context such as</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++">SDL_Window<span style="color:#f92672">*</span> window <span style="color:#f92672">=</span> NULL;
-<span style="color:#75715e">// ... setup your gl attributes and flags ...
-</span><span style="color:#75715e"></span>SDL_GLContext gl_context <span style="color:#f92672">=</span> SDL_GL_CreateContext(window);
-
-<span style="color:#75715e">// Ensure current context is null
-</span><span style="color:#75715e"></span>SDL_GL_MakeCurrent(window, <span style="color:#66d9ef">nullptr</span>);
-
-<span style="color:#75715e">// Create Filament engine using context
-</span><span style="color:#75715e"></span>Engine<span style="color:#f92672">*</span> engine <span style="color:#f92672">=</span> Engine<span style="color:#f92672">::</span>create(Engine<span style="color:#f92672">::</span>Backend<span style="color:#f92672">::</span>OPENGL,<span style="color:#66d9ef">nullptr</span>,gl_context);
-
-<span style="color:#75715e">// Now that engine is created we can make the context current
-</span><span style="color:#75715e"></span>SDL_GL_MakeCurrent(window, gl_context);
-</code></pre></div><p>Notice that we ensure the current context is null before initializing filament&rsquo;s engine then set it after. This is very important or the Engine::create call will fail.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C++" data-lang="C++"><span style="display:flex;"><span>SDL_Window<span style="color:#f92672">*</span> window <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// ... setup your gl attributes and flags ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>SDL_GLContext gl_context <span style="color:#f92672">=</span> SDL_GL_CreateContext(window);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Ensure current context is null
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>SDL_GL_MakeCurrent(window, <span style="color:#66d9ef">nullptr</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Create Filament engine using context
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Engine<span style="color:#f92672">*</span> engine <span style="color:#f92672">=</span> Engine<span style="color:#f92672">::</span>create(Engine<span style="color:#f92672">::</span>Backend<span style="color:#f92672">::</span>OPENGL,<span style="color:#66d9ef">nullptr</span>,gl_context);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Now that engine is created we can make the context current
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>SDL_GL_MakeCurrent(window, gl_context);
+</span></span></code></pre></div><p>Notice that we ensure the current context is null before initializing filament&rsquo;s engine then set it after. This is very important or the Engine::create call will fail.</p>
 <h2 id="step-2---setup-opengl-buffers">Step 2 - Setup OpenGL Buffers</h2>
 <p>Now we need to create the buffers for rendering</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// square size of our render target texture
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> rt_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span>;
-<span style="color:#75715e">// rgba
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> rt_channels <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
-
-<span style="color:#75715e">// Allocate pixel data
-</span><span style="color:#75715e"></span>GLubyte<span style="color:#f92672">*</span> pixels <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> GLubyte[rt_dim<span style="color:#f92672">*</span>rt_dim <span style="color:#f92672">*</span> rt_channels];
-
-<span style="color:#75715e">// set pixel data for green and alpha channels to 100% (255) using 4 bytes per pixel
-</span><span style="color:#75715e">// you can skip this step if you don&#39;t want to flood fill the base texture
-</span><span style="color:#75715e">// I set it to green for debugging
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;i<span style="color:#f92672">&lt;</span>rt_dim<span style="color:#f92672">*</span>rt_dim;i<span style="color:#f92672">++</span>)
-{
-	<span style="color:#66d9ef">int</span> slot <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>rt_channels;
-	<span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;j<span style="color:#f92672">&lt;</span>rt_channels;j<span style="color:#f92672">++</span>){
-		pixels[slot<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-		<span style="color:#75715e">//green or alpha
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span>(j <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">||</span> j <span style="color:#f92672">==</span> <span style="color:#ae81ff">3</span>){
-			pixels[slot<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span>;
-		}
-	}
-}
-
-<span style="color:#75715e">// make a texture
-</span><span style="color:#75715e"></span>GLuint tex_gl;
-glGenTextures(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>tex_gl);
-glBindTexture(GL_TEXTURE_2D, tex_gl);
-
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-<span style="color:#75715e">#if defined(GL_UNPACK_ROW_LENGTH) &amp;&amp; !defined(__EMSCRIPTEN__)
-</span><span style="color:#75715e"></span>glPixelStorei(GL_UNPACK_ROW_LENGTH, <span style="color:#ae81ff">0</span>);
-<span style="color:#75715e">#endif
-</span><span style="color:#75715e"></span>glTexImage2D(GL_TEXTURE_2D, <span style="color:#ae81ff">0</span>, GL_RGBA, rt_dim, rt_dim, <span style="color:#ae81ff">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-<span style="color:#75715e">// We don&#39;t need this array anymore so we can safely release it now
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">delete</span>[] pixels;
-</code></pre></div><h2 id="step-3---setup-filament-buffers-and-render-targets">Step 3 - Setup Filament Buffers and Render Targets</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C++" data-lang="C++"><span style="display:flex;"><span><span style="color:#75715e">// square size of our render target texture
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> rt_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span>;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// rgba
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> rt_channels <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Allocate pixel data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>GLubyte<span style="color:#f92672">*</span> pixels <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> GLubyte[rt_dim<span style="color:#f92672">*</span>rt_dim <span style="color:#f92672">*</span> rt_channels];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// set pixel data for green and alpha channels to 100% (255) using 4 bytes per pixel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// you can skip this step if you don&#39;t want to flood fill the base texture
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// I set it to green for debugging
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;i<span style="color:#f92672">&lt;</span>rt_dim<span style="color:#f92672">*</span>rt_dim;i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> slot <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>rt_channels;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;j<span style="color:#f92672">&lt;</span>rt_channels;j<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>		pixels[slot<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//green or alpha
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span>(j <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">||</span> j <span style="color:#f92672">==</span> <span style="color:#ae81ff">3</span>){
+</span></span><span style="display:flex;"><span>			pixels[slot<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// make a texture
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>GLuint tex_gl;
+</span></span><span style="display:flex;"><span>glGenTextures(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>tex_gl);
+</span></span><span style="display:flex;"><span>glBindTexture(GL_TEXTURE_2D, tex_gl);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+</span></span><span style="display:flex;"><span>glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+</span></span><span style="display:flex;"><span>glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+</span></span><span style="display:flex;"><span>glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#if defined(GL_UNPACK_ROW_LENGTH) &amp;&amp; !defined(__EMSCRIPTEN__)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>glPixelStorei(GL_UNPACK_ROW_LENGTH, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>glTexImage2D(GL_TEXTURE_2D, <span style="color:#ae81ff">0</span>, GL_RGBA, rt_dim, rt_dim, <span style="color:#ae81ff">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// We don&#39;t need this array anymore so we can safely release it now
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">delete</span>[] pixels;
+</span></span></code></pre></div><h2 id="step-3---setup-filament-buffers-and-render-targets">Step 3 - Setup Filament Buffers and Render Targets</h2>
 <p>Now we need to tell Filament to use our OpenGL buffer instead of it&rsquo;s own, we can do that when creating a texture by using <code>import</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// Create filament textures and render targets (note the color buffer has the import call)
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">auto</span> rt_color <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Builder()
-	.width(rt_dim)
-	.height(rt_dim)
-	.levels(<span style="color:#ae81ff">1</span>)
-	.usage(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>COLOR_ATTACHMENT <span style="color:#f92672">|</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>SAMPLEABLE)
-	.format(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>InternalFormat<span style="color:#f92672">::</span>RGBA8)
-	.import(tex_gl)
-	.build(<span style="color:#f92672">*</span>engine);
-<span style="color:#66d9ef">auto</span> rt_depth <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Builder()
-	.width(rt_dim)
-	.height(rt_dim)
-	.levels(<span style="color:#ae81ff">1</span>)
-	.usage(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>DEPTH_ATTACHMENT)
-	.format(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>InternalFormat<span style="color:#f92672">::</span>DEPTH24)
-	.build(<span style="color:#f92672">*</span>engine);
-<span style="color:#66d9ef">auto</span> rt <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>RenderTarget<span style="color:#f92672">::</span>Builder()
-	.texture(RenderTarget<span style="color:#f92672">::</span>AttachmentPoint<span style="color:#f92672">::</span>COLOR, rt_color)
-	.texture(RenderTarget<span style="color:#f92672">::</span>AttachmentPoint<span style="color:#f92672">::</span>DEPTH, rt_depth)
-	.build(<span style="color:#f92672">*</span>engine);
-
-<span style="color:#75715e">// Make a specific viewport just for our render target
-</span><span style="color:#75715e"></span>Viewport <span style="color:#a6e22e">rt_vp</span>({<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, rt_dim, rt_dim});
-view_rt<span style="color:#f92672">-&gt;</span>setRenderTarget(rt);
-view_rt<span style="color:#f92672">-&gt;</span>setViewport(rt_vp)
-</code></pre></div><h2 id="step-4---render-loop">Step 4 - Render Loop</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C++" data-lang="C++"><span style="display:flex;"><span><span style="color:#75715e">// Create filament textures and render targets (note the color buffer has the import call)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">auto</span> rt_color <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Builder()
+</span></span><span style="display:flex;"><span>	.width(rt_dim)
+</span></span><span style="display:flex;"><span>	.height(rt_dim)
+</span></span><span style="display:flex;"><span>	.levels(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>	.usage(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>COLOR_ATTACHMENT <span style="color:#f92672">|</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>SAMPLEABLE)
+</span></span><span style="display:flex;"><span>	.format(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>InternalFormat<span style="color:#f92672">::</span>RGBA8)
+</span></span><span style="display:flex;"><span>	.import(tex_gl)
+</span></span><span style="display:flex;"><span>	.build(<span style="color:#f92672">*</span>engine);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">auto</span> rt_depth <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Builder()
+</span></span><span style="display:flex;"><span>	.width(rt_dim)
+</span></span><span style="display:flex;"><span>	.height(rt_dim)
+</span></span><span style="display:flex;"><span>	.levels(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>	.usage(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>Usage<span style="color:#f92672">::</span>DEPTH_ATTACHMENT)
+</span></span><span style="display:flex;"><span>	.format(filament<span style="color:#f92672">::</span>Texture<span style="color:#f92672">::</span>InternalFormat<span style="color:#f92672">::</span>DEPTH24)
+</span></span><span style="display:flex;"><span>	.build(<span style="color:#f92672">*</span>engine);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">auto</span> rt <span style="color:#f92672">=</span> filament<span style="color:#f92672">::</span>RenderTarget<span style="color:#f92672">::</span>Builder()
+</span></span><span style="display:flex;"><span>	.texture(RenderTarget<span style="color:#f92672">::</span>AttachmentPoint<span style="color:#f92672">::</span>COLOR, rt_color)
+</span></span><span style="display:flex;"><span>	.texture(RenderTarget<span style="color:#f92672">::</span>AttachmentPoint<span style="color:#f92672">::</span>DEPTH, rt_depth)
+</span></span><span style="display:flex;"><span>	.build(<span style="color:#f92672">*</span>engine);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Make a specific viewport just for our render target
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Viewport <span style="color:#a6e22e">rt_vp</span>({<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, rt_dim, rt_dim});
+</span></span><span style="display:flex;"><span>view_rt<span style="color:#f92672">-&gt;</span>setRenderTarget(rt);
+</span></span><span style="display:flex;"><span>view_rt<span style="color:#f92672">-&gt;</span>setViewport(rt_vp)
+</span></span></code></pre></div><h2 id="step-4---render-loop">Step 4 - Render Loop</h2>
 <p>Now we just need to setup a render pass in our draw loop, this can be done with SDL or ImGui.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">while</span>(run)
-{
-	<span style="color:#75715e">// ... snipped check for quit/escape/etc ...
-</span><span style="color:#75715e"></span>
-	<span style="color:#75715e">// Start the Dear ImGui frame
-</span><span style="color:#75715e"></span>	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame();
-	ImGui<span style="color:#f92672">::</span>NewFrame();
-
-	<span style="color:#75715e">//Render in Filament and wait for the results (we could do this async if desired)
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (renderer<span style="color:#f92672">-&gt;</span>beginFrame(swapChain_rt)) {
-		renderer<span style="color:#f92672">-&gt;</span>render(view_rt);
-		renderer<span style="color:#f92672">-&gt;</span>endFrame();
-		engine<span style="color:#f92672">-&gt;</span>flushAndWait();
-	}
-
-	<span style="color:#75715e">// ... snipped handle other imgui/sdl drawing ...
-</span><span style="color:#75715e"></span>
-	<span style="color:#75715e">// Draw our texture using ImGui
-</span><span style="color:#75715e"></span>	ImGui<span style="color:#f92672">::</span>Image((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)(intptr_t)tex_gl, ImVec2(rt_dim, rt_dim));
-
-	<span style="color:#75715e">// handle close of ImGui render and window buffer swapping
-</span><span style="color:#75715e"></span>	ImGui<span style="color:#f92672">::</span>Render();
-	glViewport(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, (<span style="color:#66d9ef">int</span>)io.DisplaySize.x, (<span style="color:#66d9ef">int</span>)io.DisplaySize.y);
-	glClearColor(clear_color.x <span style="color:#f92672">*</span> clear_color.w, clear_color.y <span style="color:#f92672">*</span> clear_color.w, clear_color.z <span style="color:#f92672">*</span> clear_color.w, clear_color.w);
-	glClear(GL_COLOR_BUFFER_BIT);
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui<span style="color:#f92672">::</span>GetDrawData());
-	SDL_GL_SwapWindow(window);
-}
-
-<span style="color:#75715e">// don&#39;t forget to cleanup our texture
-</span><span style="color:#75715e"></span>glDeleteTextures(<span style="color:#ae81ff">1</span>,<span style="color:#f92672">&amp;</span>tex_gl);
-</code></pre></div><p>If you&rsquo;re successful you&rsquo;ll end up with something similar to this image where I am rendering a triangle in Filament but displaying the texture via Dear ImGui.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C++" data-lang="C++"><span style="display:flex;"><span><span style="color:#66d9ef">while</span>(run)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// ... snipped check for quit/escape/etc ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Start the Dear ImGui frame
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	ImGui_ImplOpenGL3_NewFrame();
+</span></span><span style="display:flex;"><span>	ImGui_ImplSDL2_NewFrame();
+</span></span><span style="display:flex;"><span>	ImGui<span style="color:#f92672">::</span>NewFrame();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//Render in Filament and wait for the results (we could do this async if desired)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (renderer<span style="color:#f92672">-&gt;</span>beginFrame(swapChain_rt)) {
+</span></span><span style="display:flex;"><span>		renderer<span style="color:#f92672">-&gt;</span>render(view_rt);
+</span></span><span style="display:flex;"><span>		renderer<span style="color:#f92672">-&gt;</span>endFrame();
+</span></span><span style="display:flex;"><span>		engine<span style="color:#f92672">-&gt;</span>flushAndWait();
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// ... snipped handle other imgui/sdl drawing ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Draw our texture using ImGui
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	ImGui<span style="color:#f92672">::</span>Image((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)(intptr_t)tex_gl, ImVec2(rt_dim, rt_dim));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// handle close of ImGui render and window buffer swapping
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	ImGui<span style="color:#f92672">::</span>Render();
+</span></span><span style="display:flex;"><span>	glViewport(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, (<span style="color:#66d9ef">int</span>)io.DisplaySize.x, (<span style="color:#66d9ef">int</span>)io.DisplaySize.y);
+</span></span><span style="display:flex;"><span>	glClearColor(clear_color.x <span style="color:#f92672">*</span> clear_color.w, clear_color.y <span style="color:#f92672">*</span> clear_color.w, clear_color.z <span style="color:#f92672">*</span> clear_color.w, clear_color.w);
+</span></span><span style="display:flex;"><span>	glClear(GL_COLOR_BUFFER_BIT);
+</span></span><span style="display:flex;"><span>	ImGui_ImplOpenGL3_RenderDrawData(ImGui<span style="color:#f92672">::</span>GetDrawData());
+</span></span><span style="display:flex;"><span>	SDL_GL_SwapWindow(window);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// don&#39;t forget to cleanup our texture
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>glDeleteTextures(<span style="color:#ae81ff">1</span>,<span style="color:#f92672">&amp;</span>tex_gl);
+</span></span></code></pre></div><p>If you&rsquo;re successful you&rsquo;ll end up with something similar to this image where I am rendering a triangle in Filament but displaying the texture via Dear ImGui.</p>
 <p><img src="https://i.imgur.com/M7dgdGf.png" alt="Rendering a Triangle to a Render Target"></p>
 <h2 id="reading-buffer-back-to-cpu">Reading Buffer Back To CPU</h2>
 <p>If we want we can read the buffer back into cpu land like so:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++">
-std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">&gt;</span> raw_buffer;
-<span style="color:#66d9ef">uint32_t</span> pixels_w <span style="color:#f92672">=</span> rt_dim; <span style="color:#75715e">//w;
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32_t</span> pixels_h <span style="color:#f92672">=</span> rt_dim; <span style="color:#75715e">//h;
-</span><span style="color:#75715e"></span>raw_buffer.resize(pixels_w<span style="color:#f92672">*</span>pixels_h <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span>);
-filament<span style="color:#f92672">::</span>backend<span style="color:#f92672">::</span>PixelBufferDescriptor bd(raw_buffer.data(), raw_buffer.size(), backend<span style="color:#f92672">::</span>PixelDataFormat<span style="color:#f92672">::</span>RGBA, backend<span style="color:#f92672">::</span>PixelDataType<span style="color:#f92672">::</span>UBYTE);
-
-<span style="color:#75715e">//after rendering to the target we can now read it back
-</span><span style="color:#75715e"></span>renderer<span style="color:#f92672">-&gt;</span>readPixels(rt,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,pixels_w,pixels_h,std<span style="color:#f92672">::</span>move(bd));
-
-<span style="color:#75715e">//write it to disk
-</span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>string path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./out.raw&#34;</span>;
-std<span style="color:#f92672">::</span>ofstream stream(path, std<span style="color:#f92672">::</span>ios<span style="color:#f92672">::</span>out <span style="color:#f92672">|</span> std<span style="color:#f92672">::</span>ios<span style="color:#f92672">::</span>binary);
-<span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>stream.good())
-{
-	std<span style="color:#f92672">::</span>cerr <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Failed to open: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> path <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-}
-<span style="color:#66d9ef">else</span> {
-	stream.write((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>raw_buffer[<span style="color:#ae81ff">0</span>], raw_buffer.size());
-	stream.close();
-}
-</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C++" data-lang="C++"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">&gt;</span> raw_buffer;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint32_t</span> pixels_w <span style="color:#f92672">=</span> rt_dim; <span style="color:#75715e">//w;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">uint32_t</span> pixels_h <span style="color:#f92672">=</span> rt_dim; <span style="color:#75715e">//h;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>raw_buffer.resize(pixels_w<span style="color:#f92672">*</span>pixels_h <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>filament<span style="color:#f92672">::</span>backend<span style="color:#f92672">::</span>PixelBufferDescriptor bd(raw_buffer.data(), raw_buffer.size(), backend<span style="color:#f92672">::</span>PixelDataFormat<span style="color:#f92672">::</span>RGBA, backend<span style="color:#f92672">::</span>PixelDataType<span style="color:#f92672">::</span>UBYTE);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//after rendering to the target we can now read it back
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>renderer<span style="color:#f92672">-&gt;</span>readPixels(rt,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,pixels_w,pixels_h,std<span style="color:#f92672">::</span>move(bd));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//write it to disk
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>std<span style="color:#f92672">::</span>string path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./out.raw&#34;</span>;
+</span></span><span style="display:flex;"><span>std<span style="color:#f92672">::</span>ofstream stream(path, std<span style="color:#f92672">::</span>ios<span style="color:#f92672">::</span>out <span style="color:#f92672">|</span> std<span style="color:#f92672">::</span>ios<span style="color:#f92672">::</span>binary);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span>(<span style="color:#f92672">!</span>stream.good())
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	std<span style="color:#f92672">::</span>cerr <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Failed to open: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> path <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>	stream.write((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>raw_buffer[<span style="color:#ae81ff">0</span>], raw_buffer.size());
+</span></span><span style="display:flex;"><span>	stream.close();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
 </main>
 
   <footer>

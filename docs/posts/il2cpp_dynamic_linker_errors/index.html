@@ -50,39 +50,39 @@
 <p>So the scenrio is the following you have C/C++ dynamic libraries for some platforms such as Windows <code>.dll</code>, macOS <code>.bundle</code> or <code>.dylib</code>, Linux <code>.so</code>, and Android <code>.so</code> and you have static libraries for iOS <code>.a</code>, tvOS <code>.a</code>, watchOS <code>.a</code>. How do you compile your managed C# Unity plugin into a single dynamic library that works on all platforms.</p>
 <p>This page will describe a method for allowing you to continue to ship a single non-platform specific precompiled C# DLL without also shipping loose C#, though if you plan to support iOS and other platforms using IL2CPP you will need a loose C file as well.</p>
 <p>Having only one managed DLL makes some things tricky in unity as we can&rsquo;t use defines in our to compile out different platform and architecture code and instead must rely on runtime checks instead. In other words</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#75715e">#if UNITY_IOS || UNITY_TVOS
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//handle iOS specific code here
-</span><span style="color:#75715e"></span><span style="color:#75715e">#else
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//handle other platforms here
-</span><span style="color:#75715e"></span><span style="color:#75715e">#endif
-</span></code></pre></div><p>must instead become</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">if</span>(Application.platform == RuntimePlatform.IPhonePlayer || RuntimePlatform.tvOS)
-{
-	<span style="color:#75715e">//handle iOS specific functions here
-</span><span style="color:#75715e"></span>}
-<span style="color:#66d9ef">else</span>
-{
-	<span style="color:#75715e">//handle other platforms here
-</span><span style="color:#75715e"></span>}
-</code></pre></div><p>When using PInvoke via <code>DLLImport</code> in C# it requires a constant string, that means you can&rsquo;t change the string at runtime on demand.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#75715e">//Valid
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">[DllImport(&#34;MyLib&#34;)]</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
-
-<span style="color:#75715e">//Also valid, used for statically linked libraries such as on iOS
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">[DllImport(&#34;__Internal&#34;)]</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
-
-<span style="color:#75715e">//Also valid, string is const
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> lib_name = <span style="color:#e6db74">&#34;MyLib&#34;</span>;
-<span style="color:#a6e22e">[DllImport(lib_name)]</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
-
-<span style="color:#75715e">//Invalid! The name is no longer const meaning it could change during runtime
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">string</span> lib_name = <span style="color:#e6db74">&#34;MyLib&#34;</span>;
-<span style="color:#a6e22e">[DllImport(lib_name)]</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
-</code></pre></div><p>You could load your plugin manually for each platform such as using <code>LoadLibrary</code>  in <code>kernel32</code> on Windows. This leads to maintaining dynamic injection of the libraries per-platform and then on platforms where you can&rsquo;t dynamically, such as iOS, rely on loading a module/plugin with the <code>__Internal</code> trick. Hot plugin reloading does make developers lives easier when working on the native libraries, but increases your complexity and maintenance.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#75715e">#if UNITY_IOS || UNITY_TVOS</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//handle iOS specific code here</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span><span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//handle other platforms here</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span>endif
+</span></span></code></pre></div><p>must instead become</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#66d9ef">if</span>(Application.platform == RuntimePlatform.IPhonePlayer || RuntimePlatform.tvOS)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//handle iOS specific functions here</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//handle other platforms here</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>When using PInvoke via <code>DLLImport</code> in C# it requires a constant string, that means you can&rsquo;t change the string at runtime on demand.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#75715e">//Valid</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;MyLib&#34;)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//Also valid, used for statically linked libraries such as on iOS</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;__Internal&#34;)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//Also valid, string is const</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> lib_name = <span style="color:#e6db74">&#34;MyLib&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(lib_name)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//Invalid! The name is no longer const meaning it could change during runtime</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">string</span> lib_name = <span style="color:#e6db74">&#34;MyLib&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(lib_name)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> my_func();
+</span></span></code></pre></div><p>You could load your plugin manually for each platform such as using <code>LoadLibrary</code>  in <code>kernel32</code> on Windows. This leads to maintaining dynamic injection of the libraries per-platform and then on platforms where you can&rsquo;t dynamically, such as iOS, rely on loading a module/plugin with the <code>__Internal</code> trick. Hot plugin reloading does make developers lives easier when working on the native libraries, but increases your complexity and maintenance.</p>
 <h2 id="a-solution">A Solution</h2>
 <p>Since we&rsquo;re making a single managed we can&rsquo;t rely on the compile time options, and we can&rsquo;t rely on swapping strings out of the <code>DllImport</code> attributes. We could ship loose C# files to try to work around this but we want to avoid this for various reasons. This leaves us with an option; which is maintaining two classes where one class handles the dynamic import and the other class handles the static import. Then you&rsquo;ll have a wrapper class that determines which class to use at runtime.</p>
 <p>The way we&rsquo;ll accomplish this is having an inteface that defines our C interface but doesn&rsquo;t implement them. Then we&rsquo;ll create two classes that implement the static methods from the interface and expose a wrapper prefix function that is not static. We&rsquo;ll also create an overall wrapper with the same method names as our C API so we don&rsquo;t externally call the wrapper functions. Finally we&rsquo;ll create some helpers to tell us if we should load the static or dynamic version of our interface class.</p>
@@ -112,111 +112,111 @@
 <p>Below is a blueprint for how one can implement a system like this.</p>
 <h4 id="unity-library-interface-example">Unity Library Interface Example</h4>
 <h5 id="mylibcs">MyLib.cs</h5>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLib</span>
-{
-	<span style="color:#75715e">//static linking
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> LibNameStatic = <span style="color:#e6db74">&#34;__Internal&#34;</span>;
-	<span style="color:#75715e">//dynamic linking
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> LibNameDynamic = <span style="color:#e6db74">&#34;MyLib&#34;</span>
-
-	<span style="color:#75715e">//So why aren&#39;t we using bool? instead of 2 vars
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">// it&#39;s b/c there&#39;s a cost to casting the IsStatic function to a regular bool and it&#39;s faster this way
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> <span style="color:#ae81ff">_</span>isStatic = <span style="color:#66d9ef">false</span>;
-	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> <span style="color:#ae81ff">_</span>isStaticCalc = <span style="color:#66d9ef">false</span>; <span style="color:#75715e">//have we checked?
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// &lt;summary&gt;
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// Are we in an environment where we would be loading library methods statically/embedded or dynamically?
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// &lt;/summary&gt;
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// &lt;returns&gt;False in all editor, true if ios/tvos/webgl&lt;/returns&gt;
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> IsStatic
-	{
-		<span style="color:#66d9ef">get</span> 
-		{
-			<span style="color:#66d9ef">if</span>(!<span style="color:#ae81ff">_</span>isStaticCalc)
-			{
-				<span style="color:#75715e">//Regardless of what are target platform is if we&#39;re in editor we are always using the methods loaded via dynamic libraries
-</span><span style="color:#75715e"></span>				<span style="color:#66d9ef">if</span>(Application.isEditor)
-				{
-					<span style="color:#ae81ff">_</span>isStatic = <span style="color:#66d9ef">false</span>;
-				}
-				<span style="color:#66d9ef">else</span> {
-					<span style="color:#75715e">//Other platforms may use static libs as follows below
-</span><span style="color:#75715e"></span>					<span style="color:#ae81ff">_</span>isStatic = 
-						Application.platform == RuntimePlatform.IPhonePlayer 
-						|| Application.platform == RuntimePlatform.tvOS 
-						|| Application.platform == RuntimePlatform.WebGLPlayer;
-				}
-
-				<span style="color:#75715e">//We determined which linkage we need
-</span><span style="color:#75715e"></span>				<span style="color:#ae81ff">_</span>isStaticCalc = <span style="color:#66d9ef">true</span>;
-			}
-			<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">_</span>isStatic;
-		}
-		<span style="color:#66d9ef">set</span>
-		{
-			<span style="color:#75715e">//You really shouldn&#39;t override this tbh
-</span><span style="color:#75715e"></span>			UnityEngine.Debug.LogWarning(<span style="color:#e6db74">&#34;It&#39;s not advised to set isStatic manually, let the system handle it for you&#34;</span>);
-			<span style="color:#ae81ff">_</span>isStatic = <span style="color:#66d9ef">value</span>;
-		}
-	}
-
-	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> IMyLib <span style="color:#ae81ff">_</span>myLib = <span style="color:#66d9ef">null</span>;
-	<span style="color:#75715e">/// &lt;summary&gt;
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// This object is the native interface object for either static or dynamic linking
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">/// &lt;/summary&gt;
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> IMyLib MyLib 
-	{
-		<span style="color:#66d9ef">get</span> 
-		{
-			<span style="color:#66d9ef">if</span>(<span style="color:#ae81ff">_</span>myLib == <span style="color:#66d9ef">null</span>){
-				<span style="color:#75715e">//TODO: handle dynamic reloading for win/macos/lin
-</span><span style="color:#75715e"></span>				<span style="color:#66d9ef">if</span>(IsStatic)
-				{
-					<span style="color:#ae81ff">_</span>myLib = <span style="color:#66d9ef">new</span> MyLibStatic();
-				} <span style="color:#66d9ef">else</span> 
-				{
-					<span style="color:#ae81ff">_</span>myLib = <span style="color:#66d9ef">new</span> MyLibDynamic();
-				}
-			}
-			<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">_</span>myLib;
-		}
-	}
-
-
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
-	{
-		<span style="color:#66d9ef">return</span> MyLib.call_mylib_add(a, b);
-	}
-}
-</code></pre></div><h5 id="imylibcs">IMyLib.cs</h5>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> IMyLib
-{
-	<span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
-}
-</code></pre></div><h5 id="nativedynamiccs">NativeDynamic.cs</h5>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibDynamic</span> : IMyLib
-{
-<span style="color:#a6e22e">	[DllImport(MyLib.LibNameDynamic)]</span>
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
-
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
-	{
-		<span style="color:#66d9ef">return</span> mylib_add(a, b);
-	}
-}
-</code></pre></div><h5 id="nativestaticcs">NativeStatic.cs</h5>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C#" data-lang="C#"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibStatic</span> : IMyLib
-{
-<span style="color:#a6e22e">	[DllImport(MyLib.LibNameStatic)]</span>
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
-
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
-	{
-		<span style="color:#66d9ef">return</span> mylib_add(a, b);
-	}
-}
-</code></pre></div><h5 id="nativestubc">NativeStub.c</h5>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mylib_add</span>(){}
-</code></pre></div><p>Notice how the static and dynamic classes are identical outside of the library name in the <code>DllImport</code> attribute? This makes it fairly easy to maintain as you simply need to copy/paste each method. You could also write a script that generates the actual calls from your interface if desired as well.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLib</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//static linking</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> LibNameStatic = <span style="color:#e6db74">&#34;__Internal&#34;</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//dynamic linking</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">string</span> LibNameDynamic = <span style="color:#e6db74">&#34;MyLib&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//So why aren&#39;t we using bool? instead of 2 vars</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// it&#39;s b/c there&#39;s a cost to casting the IsStatic function to a regular bool and it&#39;s faster this way</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> _isStatic = <span style="color:#66d9ef">false</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> _isStaticCalc = <span style="color:#66d9ef">false</span>; <span style="color:#75715e">//have we checked?</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// &lt;summary&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// Are we in an environment where we would be loading library methods statically/embedded or dynamically?</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// &lt;/summary&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// &lt;returns&gt;False in all editor, true if ios/tvos/webgl&lt;/returns&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> IsStatic
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">get</span> 
+</span></span><span style="display:flex;"><span>		{
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span>(!_isStaticCalc)
+</span></span><span style="display:flex;"><span>			{
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">//Regardless of what are target platform is if we&#39;re in editor we are always using the methods loaded via dynamic libraries</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">if</span>(Application.isEditor)
+</span></span><span style="display:flex;"><span>				{
+</span></span><span style="display:flex;"><span>					_isStatic = <span style="color:#66d9ef">false</span>;
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>					<span style="color:#75715e">//Other platforms may use static libs as follows below</span>
+</span></span><span style="display:flex;"><span>					_isStatic = 
+</span></span><span style="display:flex;"><span>						Application.platform == RuntimePlatform.IPhonePlayer 
+</span></span><span style="display:flex;"><span>						|| Application.platform == RuntimePlatform.tvOS 
+</span></span><span style="display:flex;"><span>						|| Application.platform == RuntimePlatform.WebGLPlayer;
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">//We determined which linkage we need</span>
+</span></span><span style="display:flex;"><span>				_isStaticCalc = <span style="color:#66d9ef">true</span>;
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> _isStatic;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">set</span>
+</span></span><span style="display:flex;"><span>		{
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">//You really shouldn&#39;t override this tbh</span>
+</span></span><span style="display:flex;"><span>			UnityEngine.Debug.LogWarning(<span style="color:#e6db74">&#34;It&#39;s not advised to set isStatic manually, let the system handle it for you&#34;</span>);
+</span></span><span style="display:flex;"><span>			_isStatic = <span style="color:#66d9ef">value</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> IMyLib _myLib = <span style="color:#66d9ef">null</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// &lt;summary&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// This object is the native interface object for either static or dynamic linking</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/// &lt;/summary&gt;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> IMyLib MyLib 
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">get</span> 
+</span></span><span style="display:flex;"><span>		{
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span>(_myLib == <span style="color:#66d9ef">null</span>){
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">//TODO: handle dynamic reloading for win/macos/lin</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">if</span>(IsStatic)
+</span></span><span style="display:flex;"><span>				{
+</span></span><span style="display:flex;"><span>					_myLib = <span style="color:#66d9ef">new</span> MyLibStatic();
+</span></span><span style="display:flex;"><span>				} <span style="color:#66d9ef">else</span> 
+</span></span><span style="display:flex;"><span>				{
+</span></span><span style="display:flex;"><span>					_myLib = <span style="color:#66d9ef">new</span> MyLibDynamic();
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> _myLib;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> MyLib.call_mylib_add(a, b);
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="imylibcs">IMyLib.cs</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">IMyLib</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="nativedynamiccs">NativeDynamic.cs</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibDynamic</span> : IMyLib
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">	[DllImport(MyLib.LibNameDynamic)]</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> mylib_add(a, b);
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="nativestaticcs">NativeStatic.cs</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C#" data-lang="C#"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyLibStatic</span> : IMyLib
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">	[DllImport(MyLib.LibNameStatic)]</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> call_mylib_add(<span style="color:#66d9ef">int</span> a, <span style="color:#66d9ef">int</span> b)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> mylib_add(a, b);
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h5 id="nativestubc">NativeStub.c</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mylib_add</span>(){}
+</span></span></code></pre></div><p>Notice how the static and dynamic classes are identical outside of the library name in the <code>DllImport</code> attribute? This makes it fairly easy to maintain as you simply need to copy/paste each method. You could also write a script that generates the actual calls from your interface if desired as well.</p>
 <p>Also notice that your stub C file doesn&rsquo;t need to match the interface at all, you can simply use void return types and no arguments for the declaration and empty definitions.</p>
 <p>So now you can compile your C# files together as a single managed DLL and leave a copy of your stub C file next to it. Since Unity treats loose C and C++ files as plugins ensure you mark to exclude the C file from <code>iOS</code>, <code>tvOS</code>, and <code>watchOS</code> as those platforms are the ones that require static linking of your library in Unity. When distributing your plugins make sure you include the .meta (or use a .unitypackage) which will maintain the appropriate target inclusion/exclusions.</p>
 <p>Now you&rsquo;re all set, no need to maintain multiple managed DLL files or loose C# scripts and you can also hide most of your interface inside your library if you don&rsquo;t plan on exposing it publicly as well.</p>
