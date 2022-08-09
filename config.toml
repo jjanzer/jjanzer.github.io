@@ -3,6 +3,8 @@ languageCode = 'en-us'
 title = 'Jesse Janzer'
 theme = "xmin"
 publishDir = "docs"
+#disableKinds = ["taxonomy","term"]
+#ignoreErrors = ["error-disable-taxonomy"]
 
 [params]
   author = 'Jesse Janzer'
