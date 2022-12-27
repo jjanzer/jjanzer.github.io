@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>webgl on Jesse Janzer</title>
-    <link>http://stunlock.gg/tags/webgl/</link>
+    <link>https://stunlock.gg/tags/webgl/</link>
     <description>Recent content in webgl on Jesse Janzer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 16 Jul 2022 15:30:05 -0600</lastBuildDate><atom:link href="http://stunlock.gg/tags/webgl/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 16 Jul 2022 15:30:05 -0600</lastBuildDate><atom:link href="https://stunlock.gg/tags/webgl/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Emscripten with CMake</title>
-      <link>http://stunlock.gg/posts/emscripten_with_cmake/</link>
+      <link>https://stunlock.gg/posts/emscripten_with_cmake/</link>
       <pubDate>Sat, 16 Jul 2022 15:30:05 -0600</pubDate>
       
-      <guid>http://stunlock.gg/posts/emscripten_with_cmake/</guid>
+      <guid>https://stunlock.gg/posts/emscripten_with_cmake/</guid>
       <description>TLDR: If you just want a quick solution.
 Emscripten is a pretty powerful tool for porting C and C++ to JavaScript. It does this through clang which can compile to WebAssembly, Wasm, and it&amp;rsquo;s own suite of libraries for making things &amp;ldquo;just work&amp;rdquo;. It&amp;rsquo;s fairly straightforward and mostly a drop in replacement for your standard compiler with some exceptions (eg: threads). Dropping it into an existing CMake project, however, isn&amp;rsquo;t as straightforward.</description>
     </item>
