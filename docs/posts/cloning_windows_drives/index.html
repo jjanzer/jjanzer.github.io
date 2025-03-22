@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloning_windows_drives | Jesse Janzer</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a rel="canonical" href="https://stunlock.gg">home</a></li>
+      
+      <li><a rel="canonical" href="https://stunlock.gg/posts/">posts</a></li>
+      
+      <li><a rel="canonical" href="https://stunlock.gg/readme/">readme</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+	<aside>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-i-tried-that-didnt-work">What I tried that didn&rsquo;t work</a></li>
+  </ul>
+</nav>
+    </aside>
+<div class="article-meta">
+ 
+<h1><span class="title">Cloning_windows_drives</span></h1>
+
+
+<h2 class="date">2025/03/22</h2>
+</div>
+
+<main>
+<h1 id="tldr">TLDR</h1>
+<ol>
+<li>Use clonezilla but don&rsquo;t proportionally copy, do a 1-for-1 disk to disk copy</li>
+<li>Use gparted to move the partitions to the very end of the disk that follow after your <code>C</code> drive</li>
+<li>Boot into windows and use the disk management utility to expand the <code>C</code> drive</li>
+</ol>
+<h1 id="the-problem">The Problem</h1>
+<p>I recently needed to migrate a drive from a 512GB SSD running windows 10 to a larger 2TB drive. I&rsquo;ve done this in the past plenty of times with Clonezilla but I ran into a problem this time.</p>
+<p>I did a proportional clone for a disk-to-disk with Clonezilla but windows failed to boot properly. I ended up getting getting into a blue screen during the boot process that had the error code <code>0xc0000225</code> and <code>unable to find the file windows\system32\winload.exe</code>. I created a windows 10 installation thumb drive and attempted to recover the new drive. I tried all the various bootrec tools to no avail. I verified that I cloned from a MBR to MBR and not GPT. I also tried one more time and it still failed.</p>
+<h2 id="what-i-tried-that-didnt-work">What I tried that didn&rsquo;t work</h2>
+<ol>
+<li>I removed the old drive so it wasn&rsquo;t interferring</li>
+<li>I physically moved the sata connections around</li>
+<li>I made sure the new drive was in the first boot slot in the bios</li>
+<li>I tried using bootrec, diskpart, bcdedit,</li>
+<li>I tried cloning again</li>
+</ol>
+<h1 id="the-solution">The Solution</h1>
+<p>I then tried cloning in Clonezilla <strong>without a proportional copy</strong>. This time it worked and I was able to boot sucessfully. Since the boot drive now worked I wanted to expand the <code>C</code> volume but I couldn&rsquo;t because the default windows installation has either has 3 or 4 partions with the <code>C</code> drive sandwiched between. So I installed gparted on a thumb drive and moved the recovery partition, which was the partition after the <code>C</code> partition, to the end of the disk. This worked well and went very fast. I then booted back into windows and use the disk utilties there to expand the <code>C</code> volume.</p>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  
+  
+  </body>
+</html>
+
