@@ -1,5 +1,5 @@
 ---
-title: "Cloning_windows_drives"
+title: "Cloning Windows Drives"
 date: 2025-03-22T13:32:18-06:00
 draft: false
 tags: ['clonezilla','gparted','disks','windows']
