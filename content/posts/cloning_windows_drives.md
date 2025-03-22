@@ -6,13 +6,13 @@ tags: ['clonezilla','gparted','disks','windows']
 ---
 
 
-# TLDR
+## TLDR
 
 1. Use clonezilla but don't proportionally copy, do a 1-for-1 disk to disk copy
 2. Use gparted to move the partitions to the very end of the disk that follow after your `C` drive
 3. Boot into windows and use the disk management utility to expand the `C` drive
 
-# The Problem
+## The Problem
 
 I recently needed to migrate a drive from a 512GB SSD running windows 10 to a larger 2TB drive. I've done this in the past plenty of times with Clonezilla but I ran into a problem this time.
 
@@ -26,6 +26,6 @@ I did a proportional clone for a disk-to-disk with Clonezilla but windows failed
 1. I tried using bootrec, diskpart, bcdedit,
 1. I tried cloning again
 
-# The Solution
+## The Solution
 
 I then tried cloning in Clonezilla **without a proportional copy**. This time it worked and I was able to boot sucessfully. Since the boot drive now worked I wanted to expand the `C` volume but I couldn't because the default windows installation has either has 3 or 4 partions with the `C` drive sandwiched between. So I installed gparted on a thumb drive and moved the recovery partition, which was the partition after the `C` partition, to the end of the disk. This worked well and went very fast. I then booted back into windows and use the disk utilties there to expand the `C` volume.
