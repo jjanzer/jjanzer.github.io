@@ -1,7 +1,7 @@
 ---
 title: "My Thoughts on WGU and Online Schools"
 date: 2025-06-09T01:21:00-06:00
-draft: true
+draft: false
 ---
 
 TLDR: If you don't care about anything other than hours, costs, difficulty, and remarks on specific classes jump to the [stats section](#stats).
