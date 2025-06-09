@@ -37,16 +37,6 @@ I wanted to make a short guide on some of the more tricky things to do or less w
     </item>
     
     <item>
-      <title>readme</title>
-      <link>https://stunlock.gg/readme/</link>
-      <pubDate>Sun, 17 Oct 2021 15:01:58 -0600</pubDate>
-      
-      <guid>https://stunlock.gg/readme/</guid>
-      <description>Hi, my name is Jesse Janzer and I am a programmer currently working at Tafi as the Director of Technology. We are developing a 3D avatar SDK called Astra which aims to be an engine agnostic character system.
-I write software for a living and have been doing it professionally since 2002. I&amp;rsquo;ve worked on a variety of systems and technologies including PHP, Perl, Python, Ruby, R, Java, Objective-C, Swift, C#, C, C++, GLSL/HLSL, Javascript, HTML, CSS, and others.</description>
-    </item>
-    
-    <item>
       <title>An Introduction to Practical 3D Math for Programmers</title>
       <link>https://stunlock.gg/posts/linear_algebra/</link>
       <pubDate>Mon, 11 Oct 2021 08:41:57 -0600</pubDate>
@@ -71,6 +61,16 @@ I write software for a living and have been doing it professionally since 2002. 
       
       <guid>https://stunlock.gg/posts/filament_offscreen_renderering/</guid>
       <description>I was making a small application for viewing 3D asets and wanted to use Google&amp;rsquo;s Filament renderer. It&amp;rsquo;s not too hard to get started with this, but I was already using my own OpenGL context and didn&amp;rsquo;t want to yield full control over to Filament. Instead I wanted to render the model on an offscreen buffer and then display it on my main window. Surprisingly this is quite difficult to figure out how and the documentation and examples don&amp;rsquo;t cover this case well.</description>
+    </item>
+    
+    <item>
+      <title>readme</title>
+      <link>https://stunlock.gg/readme/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://stunlock.gg/readme/</guid>
+      <description>Hi, my name is Jesse Janzer and I am a software developer currently working at Tafi as the VP of Engineering.
+I write software for a living and have been doing it professionally since 2002. I&amp;rsquo;ve worked on a variety of systems and technologies including PHP, Perl, Python, Ruby, R, Java, Objective-C, Swift, C#, C, C++, GLSL/HLSL, Javascript, HTML, CSS, and others. I have built websites, SAAS, embedded software, mobile apps, 3D tools, VR, pipelines, and many other systems.</description>
     </item>
     
   </channel>
