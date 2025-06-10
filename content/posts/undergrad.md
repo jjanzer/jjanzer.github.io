@@ -106,7 +106,7 @@ As someone that does hire developers on a frequent basis I would say that WGU do
 
 For students interested in going into a masters program after getting their undergraduate degree I do feel WGU adequately prepares you for most graduate level programs. Specifically for the CS program the work you will do on proofs and recurrence relationships is particularly useful in future studies. 
 
-One note about pursuing a Masters that I didn't consider at first. WGU does not have letter grades. If you get a transcript from them your GPA will [interpreted as 3.0+][15]. This can be a problem for some people looking to pursue a masters degree both due to a lack of the GPA on the official transcript and as some programs have higher GPA requirements for your undergrad. Make sure your do some research and you may want to contact the school you're interested in before you start. The other part is you won't make any real connections with professors at WGU and may lack letters of recommendations from your undergrad. To reiterate, my official transcript from WGU does not show any GPA on it. Your official transcript will also state the credit counts you earned in the actual program and what you transferred in. Lastly the total credits for the new CS program are listed as 117 credits when many programs have 120. You should be very careful about how you approach this if a Masters is what you're going for.
+One note about pursuing a Masters that I didn't consider at first. WGU does not have letter grades. If you get a transcript from them your GPA will [interpreted as 3.0+][15]. This can be a problem for some people looking to pursue a masters degree both due to a lack of the GPA on the official transcript and as some programs have higher GPA requirements for your undergrad. Make sure your do some research and you may want to contact the school you're interested in before you start. The other part is you won't make any real connections with professors at WGU and may lack letters of recommendations from your undergrad. To reiterate, my official transcript from WGU does not show any GPA on it. Your official transcript will also state the credit counts you earned in the actual program and what you transferred in. Lastly the total credits for the new CS program are listed as 117 credits when many programs have 120. You should be very careful about how you approach this if a Masters is what you're going for. All that said you can reference WGU's list they collect of [where alumni pursue other graduate programs][16].
 
 WGU recently opened up a Masters in Computer Science. I don't have any information about the masters program at WGU but I would be very interested to hear about peoples' experience at WGU's MSCS program so feel free to get in touch if you have done this.
 
@@ -458,6 +458,7 @@ Best of luck to any future students.
 [13]: https://quizlet.com "Quizlets"
 [14]: https://www.wgu.edu/about/affordability.html "WGU Affordability"
 [15]: https://cm.wgu.edu/t5/WGU-Student-Policy-Handbook/Grading-Scale/ta-p/59#toc-hId--714317407 "Grading Scale"
+[16]: https://www.wgu.edu/alumni/alumni-support/career-support.html "WGU External Graduate List"
 
 
 <style type="text/css">
