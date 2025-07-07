@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="{{ "/css/style.css" | relURL }}" />
     <link rel="stylesheet" href="{{ "/css/fonts.css" | relURL }}" />
     {{ partial "head_custom.html" . }}
+
+    {{ if .Params.canonicalUrl }}
+    <link rel="canonical" href="{{ .Params.canonicalUrl }}">
+    {{ else }}
+    <link rel="canonical" href="{{ .RelPermalink }}">
+    {{ end }}
   </head>
 
   <body>

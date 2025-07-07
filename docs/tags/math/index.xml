@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>math on Jesse Janzer</title>
+    <link>https://stunlock.gg/tags/math/</link>
+    <description>Recent content in math on Jesse Janzer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 11 Oct 2021 08:41:57 -0600</lastBuildDate><atom:link href="https://stunlock.gg/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>An Introduction to Practical 3D Math for Programmers</title>
+      <link>https://stunlock.gg/posts/linear_algebra/</link>
+      <pubDate>Mon, 11 Oct 2021 08:41:57 -0600</pubDate>
+      
+      <guid>https://stunlock.gg/posts/linear_algebra/</guid>
+      <description>## Preface There are a lot of guides for 3D math that seem to be written by people quite good at math. If instead you&#39;re like me and better at programming than math this is the guide I wish I had when I first started learning OpenGL, Direct3D, Shaders, Unity, and Unreal. I struggled a lot reading other people&#39;s guides, white papers, thesis documents, books, and videos. It felt like everyone was speaking a language I didn&#39;t know.</description>
+    </item>
+    
+  </channel>
+</rss>

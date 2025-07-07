@@ -7,7 +7,7 @@ markdeep: true
 #mathjax: true
 #disable markdown conversion and let markdeep handle it instead
 markup: "html"
-tagss: ['math','unity','3d']
+tags: ['math','unity','3d']
 ---
 
 ## Preface
