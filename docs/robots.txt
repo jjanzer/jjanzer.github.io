@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://stunlock.ggsitemap.xml
+Sitemap: https://stunlock.gg/sitemap.xml
