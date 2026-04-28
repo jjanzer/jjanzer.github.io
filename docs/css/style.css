@@ -40,7 +40,6 @@ pre code { background: none; }
 img, iframe, video { max-width: 100%; }
 main { 
   hyphens: auto;
-  overflow: auto;
   overflow-wrap: break-word;
 }
 blockquote {
