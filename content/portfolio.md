@@ -48,13 +48,6 @@ draft: false
 		position: relative;
 	}
 	.portfolio-item-images-image {
-		/*
-		display: inline-block;
-		vertical-align: middle;
-		width: 40vh;
-		height: 40vh;
-		margin: 10px;
-		*/
 		border: solid 10px rgba(255,255,255,1);
 		border-bottom-width: 80px;
 		box-shadow: 3px 3px 6px 0 rgba(0, 0, 0, 0.2),
@@ -71,10 +64,44 @@ draft: false
 		text-wrap: balance;
 		margin-top: 10px;
 	}
+	.portfolio-images-squash .portfolio-item-images-image {
+		max-height: 450px;
+	}
+	.portfolio-images-squash .portfolio-item-images-image img {
+		object-position: top;
+	}
+
+	@media (max-width: 1100px) {
+		.portfolio-item-images {
+			grid-template-columns: 50% 50%;
+		}
+		.portfolio-images-squash .portfolio-item-images-image {
+			max-height: 550px;
+		}
+	}
+	@media (max-width: 600px) {
+		.portfolio-item-images {
+			grid-template-columns: 100%;
+		}
+		.portfolio-images-squash .portfolio-item-images-image {
+			max-height: none;
+		}
+	}
+
 </style>
 
 <div class="portfolio">
 	<div class="portfolio-intro">I enjoy working with mixed technology and different types of tooling. Below contains a few of these projects that I can talk about publicly. You can see additional work on my <a href="https://www.youtube.com/channel/UCVBljercTqd_fWrKzN1mGFQ">YouTube Channel</a> or my <a href="https://github.com/jjanzer">GitHub</a>.</div>
+	<div class="portfolio-item">
+		<div class="portfolio-item-title">NLP 3D Avatar Over the Web</div>
+		<div class="portfolio-item-description">Developed a working prototype that allowed users to create avatars from natural language and visualize the results with deterministic 3D assets. Users could interact with both natural language and direct mouse controls including orbiting the character. Behind the scenes it was powered by running Daz Studio in VMs with virtual rooms users could connect into and collaborate. The rendered viewport was streamed back through to user's browser in realtime. Inference was handled with a custom model trained on top of BERT and spaCY. The system broke language into NER tokens and linked it into catalogue of assets and parameter controls like color, height, morphs, etc.</div>
+		<div class="portfolio-item-tech">C++, JavaScript, QT, FFmpeg, WebSockets, Python, Node.js, OpenGL</div>
+		<div class="portfolio-item-images portfolio-images-squash">
+			<div class="portfolio-item-images-image"><img src="https://i.imgur.com/Z3hh4Tm.png"/><div class="portfolio-item-images-image-text">Showing the understanding of the sentence structure.</div></div>
+			<div class="portfolio-item-images-image"><img src="https://i.imgur.com/DxYcgDi.png"/><div class="portfolio-item-images-image-text">Demonstrating being able to pull assets from the user's catalogue.</div></div>
+			<div class="portfolio-item-images-image"><img src="https://i.imgur.com/G8m14uT.gif"/><div class="portfolio-item-images-image-text">Demonstrating orbit controls in early prototype that simulated a 3D space and translated back to the host.</div></div>
+		</div>
+	</div>
 	<div class="portfolio-item">
 		<div class="portfolio-item-title">Distortion Correction and Relaxer</div>
 		<div class="portfolio-item-description">Wrote a geometry and UV relaxer in C++ that was successfully incorporated into the real-time avatar system at Daz/Tafi. This was used to correct for distortion from the projection system used to refit follower assets like clothing when morphed on an avatar. The images below are slowed down to show the iteration steps for visualization purposes.</div>

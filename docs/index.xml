@@ -79,7 +79,7 @@ I wanted to make a short guide on some of the more tricky things to do or less w
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://stunlock.gg/portfolio/</guid>
-      <description>I enjoy working with mixed technology and different types of tooling. Below contains a few of these projects that I can talk about publicly. You can see additional work on my YouTube Channel or my GitHub.Distortion Correction and RelaxerWrote a geometry and UV relaxer in C++ that was successfully incorporated into the real-time avatar system at Daz/Tafi. This was used to correct for distortion from the projection system used to refit follower assets like clothing when morphed on an avatar.</description>
+      <description>I enjoy working with mixed technology and different types of tooling. Below contains a few of these projects that I can talk about publicly. You can see additional work on my YouTube Channel or my GitHub.NLP 3D Avatar Over the WebDeveloped a working prototype that allowed users to create avatars from natural language and visualize the results with deterministic 3D assets. Users could interact with both natural language and direct mouse controls including orbiting the character.</description>
     </item>
     
     <item>
