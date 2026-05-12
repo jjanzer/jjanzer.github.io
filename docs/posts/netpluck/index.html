@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>netpluck: A Tool to Scan and Pluck Remote Archives | Jesse Janzer</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+
+    
+    <link rel="canonical" href="/posts/netpluck/">
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a rel="canonical" href="https://stunlock.gg">home</a></li>
+      
+      <li><a rel="canonical" href="https://stunlock.gg/posts/">posts</a></li>
+      
+      <li><a rel="canonical" href="https://stunlock.gg/readme/">readme</a></li>
+      
+      <li><a rel="canonical" href="https://stunlock.gg/portfolio/">portfolio</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+	<aside>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#reading-remote-zip-archives-without-downloading-the-entire-file">Reading Remote Zip Archives Without Downloading the Entire File</a></li>
+    <li><a href="#using-netpluck">Using NetPluck</a></li>
+    <li><a href="#abstracting-the-remote-fetch-into-bucket-handler">Abstracting the Remote Fetch into Bucket Handler</a></li>
+  </ul>
+</nav>
+    </aside>
+<div class="article-meta">
+ 
+<h1><span class="title">netpluck: A Tool to Scan and Pluck Remote Archives</span></h1>
+
+
+<h2 class="date">2026/05/11</h2>
+</div>
+
+<main>
+<h2 id="reading-remote-zip-archives-without-downloading-the-entire-file">Reading Remote Zip Archives Without Downloading the Entire File</h2>
+<p>At my current job we manage large quantities of large archive files. Many of these files are quite large, frequently ranging in the hundreds of megabytes to several gigabytes. Our storage archives contain over a petabyte of data and expands on a daily basis. A project came up where I needed a way to verify the contents of these files for validation and also to retrieve a few small files inside the compressed archives. At first I would pull the entire archive down, unpack the archive, catalog the files, and store the file I needed from the archive. For such large files this was both expensive in terms of bandwidth but also disk space and memory when doing many of these in parallel. I wondered if it was possible to scan the archive and retrieve the file I needed from each archive without actually fetching the entire thing. The archives were in zip format, typically using Deflate as the compression method.</p>
+<p>After looking up the <a href="https://en.wikipedia.org/wiki/ZIP_(file_format)">zip archive format</a>, one weekend, I noticed it contained headers that let you seek through the archive without having to decompress the entire archive. I wanted to build a tool that solved this while not relying on none core python libraries. On it&rsquo;s own this isn&rsquo;t super useful; what I needed in addition to this was a way to fetch only subsets of files off remote locations. In HTTP there is a header <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Range">Range</a> that let&rsquo;s you request a subset of a response. This is very useful when resuming downloads or threading downloads. In addition to the Range header, you can also get the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Length">Content-Length</a> which tells you the response size. I combined this into a <em>Virtual File</em> class that let me pretend the file was already in memory and just seek and read the bytes I cared about. Combining all these things allowed me to get a url from our content delivery network bucket system and then query the url and fetch both the table of contents, ToC, and pluck individual files I wanted out of the archive. This significantly lowered the costs of egress fees to scan these files (often by 99%) and greatly sped up our independent file validation tools.</p>
+<p>This is now available as a python tool at <a href="https://github.com/jjanzer/netpluck">https://github.com/jjanzer/netpluck</a> or by simply installing via pip:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pip install netpluck
+</span></span></code></pre></div><p>I have since expanded it to support local files, HTTP/HTTPs, &ldquo;Buckets&rdquo; (explained below) along with adding support for Tar files (if not compressed) in addition to Zip files.</p>
+<h2 id="using-netpluck">Using NetPluck</h2>
+<p>This demonstrates how to list all files in the remote zip file along with fetching json files containing the word <em>metadata</em> over a Backblaze B2 private bucket. Using the <code>--stats</code> flag shows 4 lookups totalling a combined payload size of less than 1 MB even though the entire file is ~1.6GB.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ time netpluck.exe --toc --path<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;b2://bar/foo/large_file.zip&#34;</span> --config<span style="color:#f92672">=</span>../configs/config.b2.json --filter<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;.*metadata.*\.json&#34;</span> --stats --out ./extracted/
+</span></span><span style="display:flex;"><span>Found file: bar/foo/large_file.zip, Size: <span style="color:#ae81ff">1695519682</span>
+</span></span><span style="display:flex;"><span>BodyShape.dsf
+</span></span><span style="display:flex;"><span>fig_029079.json
+</span></span><span style="display:flex;"><span>fig_029079.tip.png
+</span></span><span style="display:flex;"><span>fig_029079.txt
+</span></span><span style="display:flex;"><span>HeadShape.dsf
+</span></span><span style="display:flex;"><span>manifest.json
+</span></span><span style="display:flex;"><span>metadata.json
+</span></span><span style="display:flex;"><span>metadata_full.json
+</span></span><span style="display:flex;"><span>metadata_split.json
+</span></span><span style="display:flex;"><span>textures/Arms_R_1004_ggf58l.png
+</span></span><span style="display:flex;"><span>textures/Arms_SO_1004_ya20eh.png
+</span></span><span style="display:flex;"><span>textures/SuperheroBoots/S_Boots_Green_Metallic_amtaf.png
+</span></span><span style="display:flex;"><span>... snipped ...
+</span></span><span style="display:flex;"><span>textures/SuperheroBoots/S_Boots_Green_Normal_5jhnb3.png
+</span></span><span style="display:flex;"><span>textures/SuperheroBoots/S_Boots_Green_Roughness_57t2dg.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Brows_OP_1prs9z.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Hair_BM_13o49y.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Hair_DF_52443d_9ffn3.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Hair_LW_3sa1lm.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Hair_SP_c7b079_6zqu7g.png
+</span></span><span style="display:flex;"><span>textures/Eyebrows/9Hair_SP_f9f9f9_6zqu7g.png
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>1/3<span style="color:#f92672">]</span>  33.33% metadata.json <span style="color:#f92672">=</span>&gt; extracted/metadata.json
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>2/3<span style="color:#f92672">]</span>  66.67% metadata_full.json <span style="color:#f92672">=</span>&gt; extracted/metadata_full.json
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>3/3<span style="color:#f92672">]</span> 100.00% metadata_split.json <span style="color:#f92672">=</span>&gt; extracted/metadata_split.json
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>File size: 1.58GB
+</span></span><span style="display:flex;"><span>Cache hits: <span style="color:#ae81ff">123</span> size: 773.56KB
+</span></span><span style="display:flex;"><span>Uncached reads: <span style="color:#ae81ff">4</span> size: 73.95KB
+</span></span><span style="display:flex;"><span>Bytes saved: 1.58GB 100.00%
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>real    0m1.534s
+</span></span><span style="display:flex;"><span>user    0m0.000s
+</span></span><span style="display:flex;"><span>sys     0m0.000s
+</span></span></code></pre></div><h2 id="abstracting-the-remote-fetch-into-bucket-handler">Abstracting the Remote Fetch into Bucket Handler</h2>
+<p>I&rsquo;ve since written my own bucket handler abstraction tool available at: <a href="https://github.com/jjanzer/buckethandler">https://github.com/jjanzer/buckethandler</a> or via pip:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pip install buckethandler
+</span></span></code></pre></div><p>This tool makes handling of &ldquo;bucket&rdquo; systems such as Backblaze B2, Amazon S3, or other file stores such as Dropbox extremely easy. When combined with netpluck you can use it as the engine to query your files directly through APIs.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ bh ls b2:// --config<span style="color:#f92672">=</span>../configs/config.b2.json
+</span></span><span style="display:flex;"><span>bar/car/sim/a.txt                               text/plain                      4.00B   2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/b.txt                               text/plain                      4.00B   2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/micro.zip                           application/x-zip-compressed    350.00B 2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/nested/a/b/c.txt                    text/plain                      0B      2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/sample_data.zip                     application/x-zip-compressed    1.52MB  2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/sample_data_uncompressed.zip        application/x-zip-compressed    4.21MB  2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/car/sim/test.zip                            application/x-zip-compressed    3.29MB  2026-03-18 20:56:42
+</span></span><span style="display:flex;"><span>bar/foo/a.txt                                   text/plain                      0B      2026-03-28 14:30:31
+</span></span><span style="display:flex;"><span>bar/foo/b.txt                                   text/plain                      0B      2026-03-28 14:30:31
+</span></span><span style="display:flex;"><span>bar/foo/large_file.zip                          application/x-zip-compressed    1.58GB  2026-04-04 14:14:06
+</span></span><span style="display:flex;"><span>bar/foo/music.mp3                               audio/mpeg                      0B      2026-03-28 14:30:31
+</span></span><span style="display:flex;"><span>bar/foo/s3_hw.txt                               text/plain                      12.00B  2026-04-04 14:38:56
+</span></span><span style="display:flex;"><span>bar/foo/sim.tar                                 binary/octet-stream             9.02MB  2026-04-03 11:32:19
+</span></span><span style="display:flex;"><span>bar/music.mp3                                   audio/mpeg                      0B      2026-03-28 14:31:08
+</span></span><span style="display:flex;"><span>foo/a.txt                                       text/plain                      0B      2026-03-28 14:36:14
+</span></span><span style="display:flex;"><span>foo/b.txt                                       text/plain                      0B      2026-03-28 14:36:14
+</span></span><span style="display:flex;"><span>foo/music.mp3                                   audio/mpeg                      0B      2026-03-28 14:36:14
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===========================================================================================================</span>
+</span></span><span style="display:flex;"><span>Files: 17, minTime: 2026-03-18 20:56:42 maxTime: 2026-04-04 14:38:56 time delta: 16:17:42:14
+</span></span></code></pre></div>
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  
+  
+  </body>
+</html>
+

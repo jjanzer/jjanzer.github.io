@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>python on Jesse Janzer</title>
+    <link>https://stunlock.gg/tags/python/</link>
+    <description>Recent content in python on Jesse Janzer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 11 May 2026 21:44:06 -0600</lastBuildDate><atom:link href="https://stunlock.gg/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>netpluck: A Tool to Scan and Pluck Remote Archives</title>
+      <link>https://stunlock.gg/posts/netpluck/</link>
+      <pubDate>Mon, 11 May 2026 21:44:06 -0600</pubDate>
+      
+      <guid>https://stunlock.gg/posts/netpluck/</guid>
+      <description>Reading Remote Zip Archives Without Downloading the Entire File At my current job we manage large quantities of large archive files. Many of these files are quite large, frequently ranging in the hundreds of megabytes to several gigabytes. Our storage archives contain over a petabyte of data and expands on a daily basis. A project came up where I needed a way to verify the contents of these files for validation and also to retrieve a few small files inside the compressed archives.</description>
+    </item>
+    
+  </channel>
+</rss>
